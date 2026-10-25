@@ -1,0 +1,36 @@
+# Common configuration. Credentials and commercial limits come exclusively
+# from the environment (PRD 8.6); placeholders have no default values so a
+# missing variable fails the startup instead of falling back silently.
+spring:
+  application:
+    name: trevo4folhas
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      connection-init-sql: SET TIME ZONE 'UTC'
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    # Flyway technical history lives in its own schema, apart from the domain
+    # schema (AGENTS.md / DBA profile). Domain DDL is schema-qualified as
+    # public.* in the migrations, so this never depends on search_path.
+    default-schema: t4f_flyway
+    schemas: t4f_flyway,public
+    create-schemas: true
+
+trevo:
+  betting:
+    min-stake-amount: ${MIN_STAKE_AMOUNT}
+    max-stake-amount: ${MAX_STAKE_AMOUNT}
+    max-selections: ${MAX_SELECTIONS}
+    max-potential-return: ${MAX_POTENTIAL_RETURN}
+    ticket-validity-minutes: ${TICKET_VALIDITY_MINUTES}

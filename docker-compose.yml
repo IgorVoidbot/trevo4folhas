@@ -1,0 +1,76 @@
+# TREVO4FOLHAS — canonical Compose manifest (AGENTS.md: only docker-compose.yml).
+#
+# Services: app + db; the application reaches the database by the internal
+# hostname `db` (never localhost). PostgreSQL 16, UTC everywhere and the
+# project-exclusive named volume trevo4folhas_postgres_data.
+#
+# Secrets and commercial limits come from the environment only (.env, see
+# .env.example for placeholders). Values are shared consistently: the db
+# service receives POSTGRES_* and the app service derives DB_URL/DB_USERNAME/
+# DB_PASSWORD from the same values. Nothing secret is baked into images.
+
+name: trevo4folhas
+
+services:
+  db:
+    image: docker.io/library/postgres:16-alpine@sha256:3c5c8892d184f738f4fe282d14ddaa613a38f00f4189d2d94725ebe6f2909ddb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set — see .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — see .env.example}
+      TZ: UTC
+      PGTZ: UTC
+    # Explicit UTC in server and logs; connections also set UTC (see
+    # spring.datasource.hikari.connection-init-sql in application.yml).
+    command: ['postgres', '-c', 'timezone=UTC', '-c', 'log_timezone=UTC']
+    ports:
+      # Local development only, loopback binding. Do not publish the database
+      # port on production hosts (DevOps persona item 9).
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - trevo4folhas_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trevo4folhas-app:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        # Creation order is not readiness: only start after the DB answers.
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?POSTGRES_DB must be set — see .env.example}
+      DB_USERNAME: ${POSTGRES_USER:?POSTGRES_USER must be set — see .env.example}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — see .env.example}
+      BANK_WHATSAPP_NUMBER: ${BANK_WHATSAPP_NUMBER:?BANK_WHATSAPP_NUMBER must be set — see .env.example}
+      BANK_TIME_ZONE: ${BANK_TIME_ZONE:?BANK_TIME_ZONE must be set — see .env.example}
+      MIN_STAKE_AMOUNT: ${MIN_STAKE_AMOUNT:?MIN_STAKE_AMOUNT must be set — see .env.example}
+      MAX_STAKE_AMOUNT: ${MAX_STAKE_AMOUNT:?MAX_STAKE_AMOUNT must be set — see .env.example}
+      MAX_SELECTIONS: ${MAX_SELECTIONS:?MAX_SELECTIONS must be set — see .env.example}
+      MAX_POTENTIAL_RETURN: ${MAX_POTENTIAL_RETURN:?MAX_POTENTIAL_RETURN must be set — see .env.example}
+      TICKET_VALIDITY_MINUTES: ${TICKET_VALIDITY_MINUTES:?TICKET_VALIDITY_MINUTES must be set — see .env.example}
+    ports:
+      - '127.0.0.1:8080:8080'
+    healthcheck:
+      # Spring Boot Actuator (/actuator/health) is not packaged yet; until the
+      # observability card lands, readiness is a TCP probe on the HTTP port.
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 8080']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+volumes:
+  trevo4folhas_postgres_data:
+    # Explicit name so the volume is exactly trevo4folhas_postgres_data and
+    # stays exclusive to this project regardless of the Compose project name.
+    name: trevo4folhas_postgres_data

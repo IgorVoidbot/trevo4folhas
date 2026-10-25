@@ -1,0 +1,27 @@
+{
+  "name": "trevo4folhas-assets",
+  "version": "0.0.1",
+  "private": true,
+  "description": "TREVO4FOLHAS build tooling: Tailwind CSS compilation and JS/HTML/CSS quality checks. Node.js is a build tool only, never a runtime service.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "css:build": "tailwindcss -i ./src/frontend/styles/input.css -o ./src/main/resources/static/css/app.css",
+    "css:watch": "tailwindcss -i ./src/frontend/styles/input.css -o ./src/main/resources/static/css/app.css --watch",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write --no-error-on-unmatched-pattern \"src/frontend/**/*.{css,js}\" \"src/main/resources/templates/**/*.html\" \"src/main/resources/static/js/**/*.js\" eslint.config.mjs package.json",
+    "format:check": "prettier --check --no-error-on-unmatched-pattern \"src/frontend/**/*.{css,js}\" \"src/main/resources/templates/**/*.html\" \"src/main/resources/static/js/**/*.js\" eslint.config.mjs package.json"
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@tailwindcss/cli": "^4.1.16",
+    "eslint": "^9.39.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.16"
+  }
+}

@@ -1,0 +1,29 @@
+# TREVO4FOLHAS — contexto de build mínimo e sem segredos (DevOps 11).
+# Nunca enviar .env, dumps ou caches locais para o daemon Docker.
+
+# Controle de versão e metadados
+.git
+.gitignore
+
+# Segredos e ambiente (nunca embutidos na imagem)
+.env
+.env.*
+
+# Dependências e saídas reconstruídas dentro do build multi-stage
+node_modules
+target
+
+# Documentação e planejamento não participam do build
+docs
+deploy
+PRD.md
+AGENTS.md
+README.md
+
+# Backups, dumps e temporários
+dumps
+backups
+*.sql.gz
+*.dump
+*.log
+.idea

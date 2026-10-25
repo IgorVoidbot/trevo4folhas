@@ -1,0 +1,32 @@
+/*
+ * TREVO4FOLHAS — Tailwind CSS source stylesheet (PRD 8.2 / 9.1).
+ *
+ * Edit this file and regenerate the compiled output with `npm run css:build`
+ * (or keep it running with `npm run css:watch`). The generated file
+ * src/main/resources/static/css/app.css is build output and must never be
+ * edited by hand. Node.js is a build tool only; the Java runtime just serves
+ * the compiled CSS as a static resource.
+ */
+
+/* Automatic class detection is disabled so the scan is deterministic and
+   never reads build output (target/) or generated CSS. */
+@import 'tailwindcss' source(none);
+
+/* Full class names in templates and browser JS keep Tailwind detection working
+   (PRD 8.6). */
+@source '../../main/resources/templates/**/*.html';
+@source '../../main/resources/static/js/**/*.js';
+
+@theme {
+  /* Local system font stack: no web font and no CDN in production (PRD 9.1). */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Dark Mode is the single mode of the MVP (PRD 9.1); native controls follow it. */
+    color-scheme: dark;
+  }
+}

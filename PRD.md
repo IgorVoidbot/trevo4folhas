@@ -1,11 +1,16 @@
-# PRD — TREVO4FOLHAS.com
+  # PRD — TREVO4FOLHAS.com
 
 **Produto:** gestão de pré-bilhetes e palpites de futebol de uma banca regional.  
-**Versão:** 1.1 — especificação do MVP e contratos dos especialistas.  
-**Data:** 22/10/2026.  
-**Status:** proposta implementável; os parâmetros comerciais indicados como premissas podem ser ajustados pela banca.
+**Versão:** 1.2 — catálogo multimercado e fornecedor provisório de desenvolvimento.
+
+**Data:** 24/10/2026.
+**Status:** especificação para implementação incremental; fornecedor de produção, paridade e parâmetros operacionais ainda dependem de homologação e decisão do cliente.
 
 **Atualização 1.1:** diretrizes de agentes definidas no `AGENTS.md` raiz e em `docs/agents/`; contratos técnicos atualizados para PostgreSQL 16, colunas `ticket_code`/`match_date`, auditoria `TIMESTAMP`, `docker-compose.yml` e meta p95 < 200 ms, conforme instrução posterior do projeto.
+
+**Atualização 1.2:** decisão autorizada de usar API-Football somente como fornecedor provisório para iniciar o desenvolvimento. Revisados escopo, importação, modelo de mercados/seleções, snapshots, contratos HTTP, segurança, frescor, aceites e backlog. A escolha de produção cabe futuramente ao cliente, após prova de cobertura e condições de uso. Esta versão revisa explicitamente o contrato anterior de quatro entidades, odds fixas em `Match` e enum único `HOME`/`DRAW`/`AWAY`; os contratos técnicos em `AGENTS.md` e `docs/agents/` devem ser sincronizados antes de implementar as camadas afetadas. Esses arquivos e o levantamento histórico não são alterados nesta revisão.
+
+**Situação real:** repositório documental, sem aplicação, manifests de build ou testes executáveis. Esta atualização não implementa nem comprova uma integração e não autoriza criar conta, assinar plano ou efetuar pagamento ao fornecedor.
 
 ## 1. Visão geral
 
@@ -35,14 +40,18 @@ Para o apostador, a entrega é um resumo claro do pedido e um código para atend
 
 | Incluído | Fora do MVP |
 | --- | --- |
-| Catálogo de partidas cadastradas manualmente | Feed esportivo externo e importação automática de odds |
-| Mercado simples de resultado final: casa, empate ou visitante | Apostas ao vivo, placar exato, handicaps e combinações do mesmo jogo |
+| Catálogo local com importação backend e curadoria administrativa; origem manual explícita | Consulta ao fornecedor a cada visita, emissão ou confirmação |
+| Mercados pré-jogo de futebol equivalentes à referência aprovada; implantação incremental | Apostas ao vivo e Bet Builder livre sem preço próprio |
 | Cupom flutuante e geração de pré-bilhete | Cadastro, login social, carteira, depósitos e saques de apostadores |
 | Nome e WhatsApp informados na emissão | Perfil permanente ou histórico público por telefone |
 | Link de conversa com a banca | WhatsApp Business API, bots e envio automático de mensagens |
 | Painel autenticado do cambista/admin | Hierarquia de revendedores, comissões e múltiplas bancas |
 | Registro de confirmação após Pix manual | Pix integrado, QR Code dinâmico, webhooks e conciliação bancária |
 | Filtros e indicadores operacionais básicos | ERP financeiro, apuração automática de resultados e pagamento de prêmios |
+
+O aceite final exige paridade dos mercados pré-jogo da Picos da Sorte, não apenas 1X2: inclui períodos, totais, handicaps, placares, escanteios, jogadores e combinações pré-definidas conforme regras homologadas. O [levantamento local](docs/research/prematch-market-audit.md), o [catálogo amostrado](docs/research/data/picos-prematch-market-catalog.csv) e a [matriz de cobertura](docs/research/data/prematch-provider-coverage-matrix.csv) são a baseline inicial: 60 categorias observadas em 30 partidas, não inventário exaustivo nem equivalência comprovada com fornecedor. Novas categorias e divergências devem ampliar a homologação, nunca ser descartadas silenciosamente.
+
+1X2 pode ser o primeiro incremento técnico de desenvolvimento; sua entrega não satisfaz o aceite final nem reduz definitivamente o escopo. Futebol é o recorte inicial; ao vivo é futuro. O cliente ainda deve aprovar a baseline, competições, regras e proposta de fornecedor de produção. Uma seleção composta pode ocupar um item apenas se possuir cotação própria, mapeamento e regra aprovados; não multiplicar seleções correlacionadas da mesma partida.
 
 ### 2.3. Premissas comerciais propostas
 
@@ -51,13 +60,13 @@ As seguintes decisões completam pontos não definidos no pedido original. São 
 | Tema | Proposta para o MVP |
 | --- | --- |
 | Operação | Uma banca, um WhatsApp de destino e um ou mais operadores com a mesma permissão administrativa |
-| Mercado | Resultado em tempo regulamentar, incluindo acréscimos; exclui prorrogação e pênaltis |
+| Mercado | Cada tipo exige regra explícita de período, linha, participante e condições; para 1X2 inicial, tempo regulamentar com acréscimos, sem prorrogação/pênaltis. Demais regras dependem de homologação, não de semelhança de rótulos |
 | Composição | Bilhete simples ou múltiplo, com 1 a 10 partidas distintas e uma seleção por partida |
 | Valor | BRL; mínimo de R$ 5,00 e máximo de R$ 500,00 por pré-bilhete |
 | Odds | Decimais, entre 1,01 e 100,00 por seleção; no máximo duas casas decimais na entrada |
 | Retorno potencial | Máximo de R$ 10.000,00 por pré-bilhete; inclui o valor apostado |
 | Validade | Até 30 minutos após a geração ou até o início da primeira partida, o que ocorrer antes |
-| Cotação | Odds congeladas no momento da geração durante a validade do pré-bilhete, enquanto os jogos estiverem abertos |
+| Cotação | Odds congeladas na emissão durante a validade; confirmar exige elegibilidade e frescor atuais da oferta, sem recalcular seu preço histórico |
 | Edição | Bilhete gerado não pode ter nome, telefone, valor ou seleções editados; alterações exigem nova emissão |
 | Pagamento | Cambista informa os dados Pix no WhatsApp e verifica o recebimento no banco antes de confirmar |
 | Cancelamento | No sistema, somente pré-bilhetes pendentes podem ser cancelados; tratamento financeiro posterior à confirmação é manual |
@@ -95,7 +104,7 @@ As metas de conversão da seção 11 são hipóteses iniciais de acompanhamento,
 
 ### 6.1. Catálogo público e seleção
 
-**RF-01 — Listar partidas.** Exibir competição, mandante, visitante, início no horário da banca e três opções: “Casa”, “Empate” e “Visitante”. Disponibilizar filtros por data e competição. Apenas partidas `OPEN` e ainda não iniciadas podem ser selecionadas. A API deve paginar resultados; padrão de 20 e limite de 100 por página.
+**RF-01 — Listar partidas e ofertas.** Exibir competição, mandante, visitante, início no horário da banca e mercados com seleções, regras, período, linha e participante quando aplicáveis. No primeiro incremento 1X2, apresentar “Casa”, “Empate” e “Visitante”. Disponibilizar filtros por data e competição. Somente partidas futuras `OPEN` com mercado e seleção elegíveis, curados e frescos podem ser selecionadas. Consultar exclusivamente o catálogo PostgreSQL local. A API deve paginar partidas (padrão 20, máximo 100) e mercados/seleções (máximo 100 por página), sem truncar silenciosamente o detalhe.
 
 **RF-02 — Selecionar palpites.** Selecionar uma opção adiciona a partida ao cupom. Escolher outra opção da mesma partida substitui a anterior. Remover e limpar o cupom devem ser possíveis. Impedir mais de uma seleção por partida no frontend e no backend.
 
@@ -117,7 +126,7 @@ As metas de conversão da seção 11 são hipóteses iniciais de acompanhamento,
 
 Exibir resumo das regras, aviso de privacidade e declaração de maioridade antes da emissão. Essa declaração não equivale a verificação documental.
 
-**RF-06 — Revisar e gerar.** O botão “Gerar pré-bilhete” envia identificação, valor, seleções e versões de partidas. O servidor deve validar tudo novamente: quantidade, duplicidade, formato dos campos, limites, status, início e versão de cada jogo.
+**RF-06 — Revisar e gerar.** O botão “Gerar pré-bilhete” envia identificação, valor, IDs internos de seleção e versões esperadas da partida, mercado e seleção. O servidor resolve suas relações e valida quantidade, uma seleção por partida, formato, limites, curadoria, estado efetivo, início, frescor e versões; não confia em relações ou preços fornecidos pelo navegador.
 
 Se uma versão mudou, responder `409 Conflict`, atualizar os dados visíveis e solicitar nova revisão pelo usuário. Não substituir odds nem reenviar o pedido automaticamente. Quando a versão permanece válida, persistir `Ticket` e todos os `TicketItem` na mesma transação. Falha em qualquer item deve desfazer a emissão inteira.
 
@@ -168,11 +177,11 @@ Abrir a conversa não envia a mensagem automaticamente e não comprova recebimen
 
 **RF-14 — Tratar alterações nas partidas.** Adotar estados `OPEN`, `SUSPENDED`, `CLOSED` e `CANCELLED`, exibidos como “Aberta”, “Suspensa”, “Fechada” e “Cancelada”.
 
-- Apenas `OPEN`, antes do início, permite criar ou confirmar bilhetes.
+- Apenas `OPEN`, antes do início, com mercado/seleção disponíveis, curados e frescos (RF-23), permite criar ou confirmar bilhetes.
 - `SUSPENDED` e `CLOSED` bloqueiam novas emissões e confirmações; pré-bilhetes continuam pendentes até decisão ou expiração.
 - Partida `CANCELLED` não pode ser reaberta no MVP. O painel destaca bilhetes afetados para cancelamento manual dos pendentes.
 - Mudança de odds vale para novas emissões. Pendentes ainda válidos mantêm as odds congeladas, mas continuam sujeitos ao bloqueio por estado e horário.
-- Depois de existir qualquer item vinculado à partida, impedir edição de equipes, competição e início, além da exclusão física. Para reagendamento, cancelar a partida e cadastrar outra.
+- Depois de existir qualquer item vinculado à partida, impedir edição de equipes, competição e início, além da exclusão física. Divergência estrutural importada suspende a elegibilidade e exige revisão administrativa; preservar início original, expiração e snapshots. Para reagendamento aprovado, cancelar a partida e cadastrar outra com identidade de origem distinta e vínculo de revisão explícito, sem reatribuir o ID externo ao histórico existente.
 - Bilhetes confirmados afetados por cancelamento permanecem registrados e são destacados no admin. Eventuais devoluções, acordos e liquidação são tratados manualmente fora do sistema; não existe estorno automático.
 
 **RF-15 — Concorrência.** Duas tentativas simultâneas de confirmar, cancelar ou expirar o mesmo bilhete devem produzir uma única transição válida. Não permitir confirmar enquanto uma atualização concorrente deixa uma partida inelegível. O segundo operador recebe o estado atual e uma mensagem em pt-BR, sem sobrescrever a primeira decisão.
@@ -181,7 +190,7 @@ Abrir a conversa não envia a mensagem automaticamente e não comprova recebimen
 
 **RF-16 — Autenticar operadores.** Disponibilizar login e logout somente para admin, com Spring Security e sessão de servidor. Proteger páginas e APIs administrativas. A criação do primeiro operador ocorre por procedimento controlado de implantação; não haverá cadastro administrativo público, senha padrão ou credencial exposta no repositório.
 
-**RF-17 — Gerenciar partidas.** Criar, listar e editar partidas, horários futuros, competição, odds e estado. A criação exige equipes distintas, três odds válidas e início futuro. Mostrar confirmação antes de suspender, fechar ou cancelar; atualizar a versão da partida a cada edição. Abrir/reabrir somente antes do início e se ainda não estiver cancelada.
+**RF-17 — Gerenciar catálogo.** Criar partidas manuais com equipes distintas e início futuro; criar seus mercados/seleções separadamente, com regra e odd válidas. Partida sem oferta elegível não aparece como selecionável. Curar importações e controlar suspensão manual; não editar preço/identidade externos como se fossem manuais. Alterações comerciais incrementam a versão do registro afetado. Mostrar confirmação antes de suspender, fechar ou cancelar. Reabrir exige início futuro, estado externo elegível, ausência de cancelamento e aprovação administrativa; sync nunca remove suspensão manual. Mudanças estruturais em mercados/seleções referenciados também exigem nova oferta, sem alterar os termos históricos.
 
 **RF-18 — Consultar pré-bilhetes.** Listar do mais recente para o mais antigo, com paginação, filtro por status e período e busca exata pelo código. Mostrar código, nome, telefone, valor, retorno potencial, criação e validade. Somente o admin autenticado pode visualizar esses dados. O detalhe mostra snapshots dos jogos e odds, operador responsável e motivos registrados.
 
@@ -189,7 +198,19 @@ Abrir a conversa não envia a mensagem automaticamente e não comprova recebimen
 
 **RF-20 — Resumo operacional.** Apresentar contagens por estado, valores de bilhetes confirmados e tempo até confirmação no período. “Valor confirmado” significa soma de valores declarados conferidos pelos operadores; não equivale a lucro, receita contábil ou saldo bancário conciliado. Destacar confirmados que incluam partida cancelada.
 
-### 6.6. Flowchart de UX
+### 6.6. Importação e estado operacional
+
+**RF-21 — Sincronizar catálogo local.** Usar adapter HTTP API-Football no backend do monólito, sem filas. Importar agenda, tipos de mercado, bookmakers e odds pré-jogo para `Match → Market → MarketSelection`, com mapeamentos explícitos, deduplicação e upsert idempotente. IDs da referência, do fornecedor e internos pertencem a namespaces distintos; igualdade numérica ou textual não prova equivalência. Fonte `MANUAL` é separada; falha externa nunca ativa fallback manual silencioso. Troca futura de fornecedor exige novo adapter, mapeamentos, revisão de transporte e, se necessário, migrations e testes; não basta trocar uma variável.
+
+**RF-22 — Operar sync com orçamento.** Automação desligada por padrão em desenvolvimento; exigir allowlists não vazias de ligas, temporadas, bookmakers e mercados antes da primeira execução. Não há liga/temporada atualmente habilitada ou amostra autenticada validada. Reservar e contabilizar toda chamada (descoberta, páginas e retentativas), inclusive execuções manuais, no orçamento diário global configurável de no máximo 100 no modo Free de desenvolvimento, com reserva para diagnóstico. Respeitar quota diária, headers de limite/minuto e janela de reset; sem reset conhecido, não liberar orçamento por suposição. O controle deve sobreviver reinício e coordenar instâncias; no incremento inicial permitir somente uma instância executora, com contador operacional durável em armazenamento protegido e nunca no repositório. Definir limites de páginas, duração de execução, timeouts, retentativas com backoff/jitter e concorrência máxima de uma execução. Em `429`, aguardar o prazo informado e interromper ao esgotar orçamento. Exaustão, timeout, erro no corpo ou paginação incompleta marcam resultado parcial/erro, nunca catálogo completo; ausência em resposta parcial não fecha nem apaga registros. Até em execução completa, ausência isolada não prova cancelamento: bloquear quando vencer a política de frescor ou houver estado explícito.
+
+**RF-23 — Frescor e bloqueio conservador.** Persistir separadamente `requestAttemptAt`, `lastSuccessfulSyncAt` e `providerUpdatedAt` (se disponível) por recurso importado; datas UTC, sem usar auditoria como evidência de preço atual. Manter relógios independentes de agenda/estado e cotação. HTTP 200, replay ou timestamp externo inalterado não renovam o frescor da odd; timestamp ausente/ambíguo bloqueia a oferta até política de evidência aprovada. Rejeitar regressões de timestamp; falha/payload incompleto não suprime suspensão conhecida nem reabre oferta. Novas ofertas entram sem curadoria e bloqueadas; preço ausente, fora de faixa ou com precisão excedente é rejeitado/quarentenado com motivo seguro, nunca inventado ou arredondado silenciosamente.
+
+Emissão e confirmação falham fechadas se agenda/estado ou preço estiverem vencidos, indisponíveis ou sem evidência suficiente. Limiares de desenvolvimento são experimentais, configuráveis e devem ser explicitamente definidos antes de habilitar a importação; não constituem tolerância de produção. Produção fica bloqueada sem limiares aprovados e prova de cobertura, licença/fonte, atualidade e disponibilidade. Polling pré-jogo não garante suspensão em tempo real. Pendentes não têm prazo/preço renovados por sync, e confirmados não são automaticamente recalculados/cancelados.
+
+**RF-24 — Exibir estado da integração.** Admin mostra fonte, última tentativa, último sucesso, evidência de atualização do preço, completude, orçamento/reserva, motivo de bloqueio e erros sanitizados. Disparo manual limitado usa a mesma política e permissões; não recebe host, URL, chave ou headers do navegador. Disponibilidade externa (`providerStatus`), override administrativo (`adminSuspended`), curadoria e conflito estrutural são separados; elegibilidade é a conjunção conservadora dessas condições, de horário e frescor. Não expor payload bruto público, chaves, PII ou textos de erro externos sem sanitização.
+
+### 6.7. Flowchart de UX
 
 ```mermaid
 flowchart TD
@@ -211,7 +232,7 @@ flowchart TD
         J --> L["Receber pedido e entrar no admin"]
         K --> L
         L --> M["Buscar código e conferir bilhete"]
-        M --> N{"Pendente, válido e jogos abertos?"}
+        M --> N{"Pendente, válido e ofertas elegíveis/frescas?"}
         N -->|Não| O["Informar impedimento e orientar nova emissão"]
         N -->|Sim| P["Informar Pix no WhatsApp"]
         P --> Q{"Recebimento conferido no banco?"}
@@ -264,7 +285,15 @@ Se um Pix chegar depois da expiração ou houver impedimento entre pagamento e c
 
 ### 8.1. Estilo arquitetural e stack
 
-Usar monólito modular simples, com controladores HTTP, serviços transacionais, repositories Spring Data JPA e PostgreSQL. O mesmo serviço entrega páginas e APIs na mesma origem. As integrações externas são somente navegação para WhatsApp e operação manual no banco.
+Usar monólito modular simples, com controladores HTTP, serviços transacionais, repositories Spring Data JPA e PostgreSQL. O mesmo serviço entrega páginas e APIs na mesma origem. Além de navegação WhatsApp e Pix manual externo, um adapter backend importa dados esportivos. Nunca chamar fornecedor por visita, emissão ou confirmação, nem durante locks/transações de domínio.
+
+#### Decisão provisória de fornecedor — desenvolvimento, não homologação
+
+Usar API-Football v3 para iniciar desenvolvimento, sem compromisso de adoção operacional. Na consulta de 24/10/2026, o [pricing oficial](https://www.api-football.com/pricing) anuncia Free de US$ 0, 100 requisições/dia e endpoints incluídos, com temporadas restritas. Isso não comprova disponibilidade de partidas futuras ou licença para o uso pretendido.
+
+O [guia oficial de 13/03/2026](https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide), consultado em 24/10/2026, documenta GET em `https://v3.football.api-sports.io/`, header `x-apisports-key`, `/leagues`, `/fixtures`, `/odds`, `/odds/bets` e `/odds/bookmakers`. Exige conferir `errors` e `paging` mesmo com HTTP 200; `/odds` é paginado e suas odds pré-jogo atualizam tipicamente a cada três horas, não como feed operacional de trading em tempo real. IDs pré-jogo e live têm namespaces distintos. A referência completa `documentation-v3` não foi recuperada nesta revisão; o guia não substitui sua validação na implementação.
+
+Não há prova autenticada de paridade, licença operacional, cobertura de competições/temporadas ou frescor adequado. O cliente escolherá o fornecedor/pacote de produção após amostras atuais e proposta comercial; orçamento gratuito é instrumento de desenvolvimento, não garantia de operação. Dados simulados somente em testes explicitamente rotulados, nunca como evidência de integração real.
 
 | Camada | Escolha |
 | --- | --- |
@@ -288,6 +317,7 @@ Compilar Tailwind via CLI, sem Play CDN em produção, conforme a [instalação 
 flowchart LR
     Browser["Navegador público ou admin"] -->|HTTPS| App["Spring Boot 3: MVC + Thymeleaf + serviços"]
     App -->|JPA / transações| Database[("PostgreSQL")]
+    App -->|"Adapter backend: sync fora das transações"| Provider["API-Football provisória"]
     Browser -->|"Clique explícito"| WhatsApp["WhatsApp da banca"]
     Operator["Cambista"] -->|"Conferência manual"| Bank["Banco / Pix"]
     Operator -->|"Sessão administrativa"| App
@@ -326,7 +356,6 @@ src/
         Ticket.java
         TicketItem.java
         TicketStatus.java
-        Selection.java
         TicketController.java
         AdminTicketController.java
         TicketService.java
@@ -337,6 +366,13 @@ src/
         BaseEntity.java
         ApiExceptionHandler.java
         MoneyCalculator.java
+      market/
+        Market.java
+        MarketSelection.java
+      integration/
+        SportsDataProvider.java
+        ApiFootballAdapter.java
+        CatalogSyncService.java
     resources/
       application.yml
       application-local.yml
@@ -368,13 +404,16 @@ Organizar por funcionalidade, com responsabilidades claras, sem interfaces de se
 
 ### 8.3. Schema e diagrama ERD
 
-As entidades de negócio são exatamente `Admin`, `Match`, `Ticket` e `TicketItem`. Os nomes físicos são `admins`, `matches`, `tickets` e `ticket_items`. Não criar tabela de apostadores, carteira ou pagamentos.
+As entidades de domínio são `Admin`, `Match`, `Market`, `MarketSelection`, `Ticket` e `TicketItem`, nas tabelas `admins`, `matches`, `markets`, `market_selections`, `tickets` e `ticket_items`. Esta é a revisão explícita do contrato de quatro entidades da v1.1. Não criar tabela de apostadores, carteira ou pagamentos, nem tabela de sync sem necessidade demonstrada: metadados por registro e observabilidade atendem o incremento; o contador operacional do RF-22 não é entidade de negócio.
 
 ```mermaid
 erDiagram
     Admin o|--o{ Ticket : handles
     Ticket ||--|{ TicketItem : contains
     Match ||--o{ TicketItem : references
+    Match ||--o{ Market : offers
+    Market ||--o{ MarketSelection : contains
+    MarketSelection ||--o{ TicketItem : snapshots
 
     Admin {
         uuid id PK
@@ -392,10 +431,52 @@ erDiagram
         varchar home_team
         varchar away_team
         timestamptz match_date
-        numeric home_odds
-        numeric draw_odds
-        numeric away_odds
         varchar status
+        varchar source_namespace
+        varchar external_fixture_id
+        varchar provider_status
+        boolean admin_suspended
+        boolean structural_conflict
+        bigint version
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    Market {
+        uuid id PK
+        uuid match_id FK
+        varchar source_namespace
+        varchar bookmaker_id
+        varchar external_market_id
+        varchar market_type
+        varchar display_name
+        varchar period
+        varchar line
+        varchar participant
+        varchar specifiers_key
+        varchar rule_key
+        text rule_text
+        varchar provider_status
+        boolean admin_suspended
+        boolean curated
+        bigint version
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    MarketSelection {
+        uuid id PK
+        uuid market_id FK
+        varchar external_selection_key
+        varchar selection_code
+        varchar display_name
+        numeric odds
+        varchar provider_status
+        boolean admin_suspended
+        boolean curated
+        timestamptz request_attempt_at
+        timestamptz last_successful_sync_at
+        timestamptz provider_updated_at
         bigint version
         timestamp created_at
         timestamp updated_at
@@ -428,8 +509,24 @@ erDiagram
         uuid id PK
         uuid ticket_id FK
         uuid match_id FK
-        varchar selection
+        uuid market_selection_id FK
         numeric selected_odds
+        bigint match_version_snapshot
+        bigint market_version_snapshot
+        bigint selection_version_snapshot
+        varchar market_snapshot
+        varchar selection_snapshot
+        varchar selection_code_snapshot
+        varchar period_snapshot
+        varchar line_snapshot
+        varchar participant_snapshot
+        text rule_snapshot
+        varchar provider_snapshot
+        varchar bookmaker_snapshot
+        varchar external_fixture_id_snapshot
+        varchar external_market_id_snapshot
+        varchar external_selection_key_snapshot
+        text specifiers_snapshot
         varchar competition_snapshot
         varchar home_team_snapshot
         varchar away_team_snapshot
@@ -444,22 +541,32 @@ erDiagram
 | Entidade | Detalhamento |
 | --- | --- |
 | `Admin` | `id` UUID; `username varchar(100)` único e normalizado; `display_name varchar(100)`; `password_hash varchar(255)`; `active boolean`. Todos obrigatórios. Operadores desativados permanecem para rastreabilidade. |
-| `Match` | `competition varchar(120)`, equipes `varchar(120)`, `match_date timestamptz`, odds `numeric(5,2)` e `status varchar(16)`, todos obrigatórios; `version bigint` para `@Version`. `CHECK` de odds entre 1,01 e 100,00 e equipes distintas após normalização. |
+| `Match` | `competition varchar(120)`, equipes `varchar(120)`, `match_date timestamptz`, `status varchar(16)` e `version bigint` obrigatórios; equipes distintas após normalização. Sem colunas de odds. Origem, estado externo, suspensão e conflito estrutural conforme RF-24. |
+| `Market` | FK `match_id`; tipo, período, linha, participante, `rule_key`, `rule_text text` e especificadores canônicos; `display_name varchar(255)`, origem, bookmaker e ID de mercado externos. `provider_status`, `admin_suspended`, `curated` e `version bigint` obrigatórios. Uma instância diferencia explicitamente regras/variantes, não apenas título. |
+| `MarketSelection` | FK `market_id`; chave externa estável no mercado, `selection_code`, rótulo, `odds numeric(5,2)`, estado externo, suspensão, curadoria e `version bigint`. `HOME`/`DRAW`/`AWAY` são codes somente de 1X2, não enum universal. Odds entre 1,01 e 100,00, até duas casas decimais validadas antes do cast SQL. |
 | `Ticket` | `ticket_code varchar(32)`, `request_key uuid`, hashes SHA-256 em `char(64)`, identificação `varchar(100)`/`varchar(15)` obrigatória na emissão; valor e retorno `numeric(14,2)`; `total_odds numeric(41,20)` para suportar até dez odds de duas casas sem perda; `status varchar(16)` e `expires_at` obrigatórios; `version bigint`. |
 | `Ticket` — decisão | `handled_by` e `handled_at` nulos em pendentes/expirados e obrigatórios em confirmados/cancelados. `cancellation_reason varchar(250)` obrigatório apenas em cancelados; `operator_note varchar(500)` opcional e não exibido publicamente. `whatsapp_clicked_at` opcional registra somente o primeiro clique observado. |
-| `TicketItem` | FKs obrigatórias; `selection varchar(16)` em `HOME`, `DRAW`, `AWAY`; `selected_odds numeric(5,2)`; snapshots obrigatórios com os mesmos limites textuais da partida e `match_date_snapshot timestamptz`. Dados imutáveis após criação. |
+| `TicketItem` | FKs `ticket_id`, `match_id`, `market_selection_id` obrigatórias e coerentes com o caminho seleção → mercado → partida; `selected_odds numeric(5,2)` e versões aceitas. Snapshots de partida, mercado, seleção (code e rótulo), período, linha, participante, regra, fornecedor/namespace, bookmaker e IDs externos; `match_date_snapshot timestamptz`. Conteúdo imutável, independente de sync e retenção do fornecedor. |
 
-`created_at` e `updated_at` usam `TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL` em **todas as quatro tabelas**, com valor inicial igual e atualização automática de `updated_at` em qualquer alteração, inclusive jobs e SQL de manutenção. Configurar banco e todas as conexões em UTC: `TIMESTAMP` não armazena fuso. Mapear auditoria em `BaseEntity` com semântica explícita UTC e conversão na fronteira da API. Toda entidade de domínio estende essa `@MappedSuperclass`; campos gerenciados pelo banco são somente leitura para a aplicação. Centralizar a garantia em defaults/triggers PostgreSQL criados por migration, sem depender apenas de callbacks JPA.
+`created_at` e `updated_at` usam `TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL` em **todas as seis tabelas**, com valor inicial igual e atualização automática de `updated_at` em qualquer alteração, inclusive jobs e SQL de manutenção. Configurar banco e todas as conexões em UTC: `TIMESTAMP` não armazena fuso. Mapear auditoria em `BaseEntity` com semântica explícita UTC e conversão na fronteira da API. Toda entidade de domínio estende essa `@MappedSuperclass`; campos gerenciados pelo banco são somente leitura para a aplicação. Centralizar a garantia em defaults/triggers PostgreSQL criados por migration, sem depender apenas de callbacks JPA.
+
+Todos os IDs internos são UUID independentes do fornecedor. Campos de identidade externa usam `varchar(255)` não vazio; namespace distingue fornecedor/produto/canal pré-jogo, inclusive `MANUAL`. Em `MANUAL`, gerar IDs locais estáveis e bookmaker `MANUAL`, sem colisão com origem externa. Período/code usam `varchar(64)`, linha canônica `varchar(64)` sem ponto flutuante, participante `varchar(255)` com namespace/ID e papel, regra `varchar(255)` versionada e rótulos `varchar(255)`; `specifiers_key text` é representação ordenada, determinística e limitada a 1.024 bytes. Campos não aplicáveis usam sentinela canônica explícita `NONE`, nunca string vazia ou `NULL` na identidade. Normalizar linha decimal sem zeros redundantes e distinguir ausência de zero. Não derivar identidade só de rótulo; se o fornecedor não fornecer ID de seleção, o adapter deve produzir chave semântica estável homologada, senão bloquear importação. Snapshots reproduzem esses limites e sentinelas, contendo também nomes legíveis; `rule_snapshot text` preserva a regra aceita.
+
+Metadados `request_attempt_at`, `last_successful_sync_at` e `provider_updated_at` são `timestamptz` nullable antes da primeira evidência; aplicam-se também a `Match` e `Market`, omitidos do ERD apenas por concisão. `NULL` não significa fresco. Estado externo desconhecido é `UNKNOWN` e bloqueia. `admin_suspended` e `structural_conflict` iniciam `false`; curadoria inicia `false`. Estados externos elegíveis exigem mapeamento explícito por adapter; `status` de partida nunca é reaberto automaticamente contra override/revisão. Não há obrigação de armazenar payload bruto.
+
+Para origem `MANUAL`, usar estado explícito `MANUAL` (não simular resposta externa) e `manual_reviewed_at timestamptz` em partida/mercado/seleção, renovado somente por revisão administrativa explícita de agenda/estado/preço. A política experimental/aprovada deve definir sua validade separadamente; fonte manual também falha fechada após vencimento. `provider_updated_at` permanece nulo nesse caso. `selection_code_snapshot` e `specifiers_snapshot` preservam code e identidade canônica, além dos rótulos históricos. Limitar o tamanho agregado em bytes da chave composta de mercado e validar sua indexabilidade no PostgreSQL 16 nas migrations/testes antes de habilitar importação; nunca truncar IDs/especificadores para caber.
 
 Os nomes físicos são `tickets.ticket_code` e `matches.match_date`. Propriedades Java/JSON podem manter `code` e `startsAt`, com mapeamento explícito. Não criar duas colunas para representar o mesmo dado.
 
 O requisito de timestamps também se aplica a futuras tabelas introduzidas no schema da aplicação. Manter o histórico técnico do Flyway em schema separado, sem criar entidades adicionais no modelo de negócio.
 
-Os hashes de requisição e sessão permitem idempotência sem criar conta: `request_hash` representa o conteúdo normalizado, incluindo as versões enviadas pelo cliente, e `session_hash` deriva de um nonce aleatório da sessão anônima, nunca do cookie bruto. Em um reenvio idêntico já persistido, verificar primeiro a chave, a sessão e o hash e devolver o estado atual do bilhete; não revalidar esse pedido contra as versões atuais das partidas nem gerar outro registro. As versões atuais são verificadas em novas emissões. Se a sessão expirar, não devolver dados com base apenas na chave ou no código.
+Os hashes de requisição e sessão permitem idempotência sem criar conta: `request_hash` representa o conteúdo normalizado, incluindo as versões enviadas pelo cliente, e `session_hash` deriva de um nonce aleatório da sessão anônima, nunca do cookie bruto. Em um reenvio idêntico já persistido, verificar primeiro a chave, a sessão e o hash e devolver o estado atual do bilhete; não revalidar esse pedido contra as versões atuais de partida/mercado/seleção nem gerar outro registro. As versões atuais são verificadas em novas emissões. Se a sessão expirar, não devolver dados com base apenas na chave ou no código.
 
 #### Restrições e índices
 
 - `UNIQUE(admins.username)`, `UNIQUE(tickets.ticket_code)`, `UNIQUE(tickets.request_key)` e `UNIQUE(ticket_items.ticket_id, ticket_items.match_id)`. A constraint de `ticket_code` já cria seu índice de busca exata.
+- `UNIQUE(matches.source_namespace, matches.external_fixture_id)`; `UNIQUE(markets.match_id, markets.source_namespace, markets.bookmaker_id, markets.external_market_id, markets.period, markets.line, markets.participant, markets.rule_key, markets.specifiers_key)`; `UNIQUE(market_selections.market_id, market_selections.external_selection_key)`. Componentes dessas chaves são `NOT NULL`; sentinelas tratam ausência sem duplicatas por `NULL`. `market_type` é obrigatório e sua equivalência ao ID externo depende do mapeamento aprovado.
+- Garantir por constraint trigger que `ticket_items.match_id` coincide com a partida da seleção referenciada; não permitir mover mercado/seleção entre pais. Índices das FKs `markets(match_id)`, `market_selections(market_id)` e `ticket_items(market_selection_id)` quando não cobertos pelo prefixo de índice único.
 - FKs com `ON DELETE RESTRICT` explícito; não apagar partidas, bilhetes ou operadores referenciados. O fluxo de produto não oferece exclusão física de bilhetes.
 - `CHECK` para valores positivos, odds e enums válidos; associação obrigatória de operador/horário às decisões manuais.
 - Índices em `matches(match_date)` (`idx_matches_match_date`), `tickets(status, created_at)`, `tickets(expires_at)` para pendentes, `ticket_items(match_id)` e `tickets(handled_by)`. Adicionar `(status, match_date)` para catálogo se o plano de execução justificar.
@@ -469,11 +576,13 @@ Os hashes de requisição e sessão permitem idempotência sem criar conta: `req
 
 ### 8.4. Transações e consistência
 
-1. **Emissão:** verificar chave idempotente; bloquear partidas selecionadas em ordem estável de UUID; verificar versões, estado e horários; calcular; gravar bilhete e itens; confirmar transação curta.
-2. **Confirmação/cancelamento:** bloquear o bilhete, reavaliar status e prazo; na confirmação, bloquear suas partidas em ordem estável e verificar elegibilidade; persistir decisão e operador na mesma transação.
-3. **Edição de partida:** bloquear a linha antes de verificar referências, alterar campos e incrementar `version`. Isso impede corrida entre primeira emissão e alteração de informações estruturais.
+1. **Emissão:** verificar chave idempotente; bloquear partidas, mercados e seleções na hierarquia abaixo; verificar todas as versões, relações, curadoria, estado, frescor e horários; calcular com odds locais; gravar bilhete e snapshots atomicamente.
+2. **Confirmação/cancelamento:** bloquear o bilhete, reavaliar status e prazo; na confirmação, bloquear seus registros de catálogo na mesma hierarquia e verificar elegibilidade atual, sem exigir igualdade com versões históricas nem recalcular snapshots; persistir decisão e operador na mesma transação.
+3. **Edição/importação:** obter e validar resposta externa fora de transação; aplicar upserts em lotes curtos com a mesma ordem de locks e revalidar timestamp/identidade. Bloquear pais antes de inserir filhos ou verificar referências. Incrementar `version` em mudança comercial/estado/curadoria, não em mero registro de tentativa; metadados operacionais continuam auditados. Não substituir atualização mais recente por resposta atrasada.
 4. **Expiração:** atualizar condicionalmente apenas `PENDING` com `expires_at <= now`; atualizar também `version` e `updated_at` para não mascarar alterações concorrentes.
 5. **Unicidade/idempotência concorrente:** tratar violação de chave com nova transação de consulta após rollback. Nunca continuar usando transação JPA já marcada para rollback.
+
+Hierarquia compartilhada por comandos admin, sync, emissão e confirmação: `Ticket` existente primeiro (quando aplicável), depois todos `Match` por UUID crescente, todos `Market` por UUID crescente e todos `MarketSelection` por UUID crescente. Sync/edição nunca adquire lock de bilhete depois de catálogo; destaque de afetados usa consulta sem lock ou trabalho posterior. Emissão insere um bilhete novo após os locks de catálogo, sem disputar registro existente. Revalidar relógio, frescor e estado sob locks; nenhum HTTP externo dentro deles. Testar as corridas sync × emissão/confirmar/suspensão, incluindo a primeira referência e criação concorrente de ofertas.
 
 Usar bloqueios de linha com Spring Data JPA onde necessário e timeout curto configurado; reavaliar o prazo após adquirir os bloqueios, sem reutilizar horário capturado antes da espera. Não manter transação aberta enquanto o operador conversa no WhatsApp ou confere o banco. O PostgreSQL documenta os bloqueios por linha e a necessidade de ordem consistente para reduzir deadlocks em [Explicit Locking](https://www.postgresql.org/docs/16/explicit-locking.html).
 
@@ -485,6 +594,8 @@ A precisão decimal é necessária para a regra de cálculo; o PostgreSQL recome
 | --- | --- | --- |
 | `GET /` | Público | Catálogo e cupom |
 | `GET /api/matches` | Público | Partidas elegíveis, filtros e paginação |
+| `GET /api/matches/{id}/markets` | Público | Mercados elegíveis paginados, com semântica e versões de partida/mercado |
+| `GET /api/markets/{id}/selections` | Público | Seleções elegíveis paginadas, IDs internos, odds em strings e versões de seleção/mercado/partida |
 | `GET /api/config` | Público | Limites comerciais, timezone e telefone público da banca; nunca segredos |
 | `POST /api/tickets` | Público + CSRF | Validar e emitir, com `Idempotency-Key`; criação retorna `201`, reenvio idempotente retorna `200` |
 | `POST /api/tickets/whatsapp-click` | Sessão emissora + CSRF | Registrar primeiro clique pelo `requestKey`; não recebe código como autorização |
@@ -498,6 +609,12 @@ A precisão decimal é necessária para a regra de cálculo; o PostgreSQL recome
 | `GET /api/admin/matches` | Admin | Consulta administrativa, incluindo estados não públicos |
 | `POST /api/admin/matches` | Admin + CSRF | Criar partida |
 | `PATCH /api/admin/matches/{id}` | Admin + CSRF | Editar campos permitidos com versão esperada |
+| `POST /api/admin/matches/{id}/markets` | Admin + CSRF | Criar mercado de origem manual com regra e especificadores |
+| `PATCH /api/admin/markets/{id}` | Admin + CSRF | Editar mercado manual ou curadoria/suspensão de importado, com versão esperada |
+| `POST /api/admin/markets/{id}/selections` | Admin + CSRF | Criar seleção manual com preço válido |
+| `PATCH /api/admin/selections/{id}` | Admin + CSRF | Editar seleção manual ou curadoria/suspensão de importada, com versão esperada |
+| `GET /api/admin/catalog-sync/status` | Admin | Estado sanitizado da integração e orçamento; sem mutação, com `no-store` |
+| `POST /api/admin/catalog-sync` | Admin + CSRF | Executar sync limitada, sem parâmetros de host/segredo; retornar resumo completo/parcial/erro, sem payload bruto |
 | `GET /api/admin/tickets` | Admin | Filtros, busca exata por `code` e paginação |
 | `GET /api/admin/tickets/{id}` | Admin | Dados detalhados e snapshots |
 | `POST /api/admin/tickets/{id}/confirm` | Admin + CSRF | Confirmar após declaração de conferência do Pix |
@@ -517,9 +634,10 @@ Exemplo de corpo de emissão, com chaves e enums em inglês:
   "adultDeclared": true,
   "items": [
     {
-      "matchId": "0d22213b-95bd-4488-bb49-620fd225b132",
-      "selection": "HOME",
-      "matchVersion": 3
+      "selectionId": "0d22213b-95bd-4488-bb49-620fd225b132",
+      "matchVersion": 3,
+      "marketVersion": 2,
+      "selectionVersion": 5
     }
   ]
 }
@@ -529,11 +647,28 @@ Não aceitar do cliente odds definitivas, retorno, código, operador ou status. 
 
 Resposta contém `id`, `code`, `status`, `createdAt`, `expiresAt`, valores decimais em strings, itens com snapshots e resumo para a interface. O frontend traduz status e opções para pt-BR e formata moeda com `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`.
 
+O catálogo devolve `matchId`, `marketId`, `selectionId`, `matchVersion`, `marketVersion`, `selectionVersion`, `marketType`, `selectionCode`, rótulos pt-BR, `period`, `line`, `participant`, `rule` e `odds` string; relações são resolvidas pelo servidor na emissão. Respostas paginadas informam `page`, `size`, `totalElements`, `totalPages`; ofertas vencidas não são selecionáveis. Não devolver metadados internos de credenciais ou erros brutos. O resumo persistido e o WhatsApp identificam mercado, seleção, período, linha e participante relevantes, não somente “Casa/Visitante”. A confirmação recebe `ticketVersion` e `pixReceiptChecked: true`; cancelamento recebe `ticketVersion` e `reason`, sem operador/status arbitrário. Conflito de versão do bilhete retorna `409`.
+
 Erros usam código técnico em inglês e mensagem em pt-BR, por exemplo `errorCode: 'MATCH_UNAVAILABLE'` e `message: 'Uma das partidas não está disponível para confirmação.'`. Mapear `400` para entrada inválida, `401` para sessão admin ausente/expirada na API, `403` para acesso/CSRF, `404` para recurso inexistente, `409` para concorrência/versão/estado/expiração e `429` para excesso de requisições. Respostas não expõem stack traces nem campos internos. Templates, mensagens de Bean Validation e erros de login também devem ser traduzidos.
 
 ### 8.6. Configuração e comandos previstos
 
 Configurar por ambiente: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `BANK_WHATSAPP_NUMBER`, `BANK_TIME_ZONE`, `MIN_STAKE_AMOUNT`, `MAX_STAKE_AMOUNT`, `MAX_SELECTIONS`, `MAX_POTENTIAL_RETURN` e `TICKET_VALIDITY_MINUTES`. Limitar `MAX_SELECTIONS` a 10 até revisão da precisão de `total_odds`. Não expor credenciais nem vincular criação recorrente de admin a uma senha permanente de bootstrap.
+
+Configuração prevista do adapter, somente backend; são nomes/contratos futuros, não arquivos existentes:
+
+| Variáveis em inglês | Política |
+| --- | --- |
+| `SPORTS_DATA_PROVIDER`, `SPORTS_DATA_ENABLED` | `API_FOOTBALL` provisório; desabilitado por padrão; fonte `MANUAL` sempre distinta |
+| `API_FOOTBALL_API_KEY` | Placeholder `YOUR_API_KEY_HERE` apenas em exemplo futuro; segredo real injetado no servidor, nunca git, browser, logs ou `/api/config` |
+| `SPORTS_DATA_SYNC_ENABLED`, `SPORTS_DATA_SYNC_INTERVAL_SECONDS` | Agendamento desligado por padrão; intervalo validado contra orçamento e política de desenvolvimento |
+| `SPORTS_DATA_DAILY_REQUEST_BUDGET`, `SPORTS_DATA_REQUEST_RESERVE`, `SPORTS_DATA_QUOTA_STATE_PATH` | Total diário ≤ 100 no modo Free; reserva positiva menor que o total; estado durável protegido fora do repo; sem estado confiável, bloquear chamadas |
+| `SPORTS_DATA_LEAGUE_ALLOWLIST`, `SPORTS_DATA_SEASON_ALLOWLIST`, `SPORTS_DATA_BOOKMAKER_ALLOWLIST`, `SPORTS_DATA_MARKET_ALLOWLIST` | Vazias por padrão; valores reais devem ser validados antes de habilitar sync |
+| `SPORTS_DATA_CONNECT_TIMEOUT_MS`, `SPORTS_DATA_READ_TIMEOUT_MS`, `SPORTS_DATA_MAX_RUN_SECONDS`, `SPORTS_DATA_MAX_PAGES`, `SPORTS_DATA_MAX_RETRIES`, `SPORTS_DATA_MAX_CONCURRENT_RUNS` | Exigir limites positivos e finitos antes de habilitar; retentativas podem ser zero; concorrência inicial = 1 |
+| `SPORTS_DATA_MAX_PRICE_AGE_SECONDS`, `SPORTS_DATA_MAX_SCHEDULE_AGE_SECONDS`, `SPORTS_DATA_MAX_STATUS_AGE_SECONDS` | Sem valor implícito; exigir política experimental DEV explicitamente configurada; produção bloqueada até aprovação |
+| `MANUAL_PRICE_MAX_AGE_SECONDS`, `MANUAL_SCHEDULE_MAX_AGE_SECONDS`, `MANUAL_STATUS_MAX_AGE_SECONDS` | Validade de revisão manual explícita, sem default; não renovada por sync ou acesso público |
+
+Base HTTPS fixa `https://v3.football.api-sports.io/` no adapter, paths permitidos e parâmetros tipados/allowlisted; não aceitar URL arbitrária do cliente nem seguir redirecionamento para host não autorizado (proteção SSRF). Erros sanitizados por código interno, sem copiar headers/chave, URL sensível ou payload externo em logs/respostas. O intervalo e o orçamento não são autorização para uso operacional. Configuração inválida impede habilitar importação e nunca libera oferta vencida.
 
 Os comandos abaixo são contratos de entrega para a implementação; o repositório atual ainda não possui esses executáveis ou manifests.
 
@@ -588,7 +723,7 @@ A ação primária usa texto escuro sobre emerald claro para facilitar contraste
 
 ### 9.2. Comportamentos dos componentes
 
-- **Card de partida:** competição e horário no topo; equipes com nomes legíveis; três botões com rótulo e odd. Não depender de escudos externos para identificação.
+- **Card de partida:** competição e horário no topo; equipes legíveis; mercados agrupados e detalhe paginado com seleção, regra, linha, período, participante e odd. Três botões apenas no incremento 1X2. Não depender de escudos externos para identificação; traduzir rótulos sem alterar semântica.
 - **Cupom desktop:** coluna `lg:sticky lg:top-4`, com rolagem interna em listas longas e CTA visível.
 - **Cupom móvel:** barra inferior `fixed bottom-0 inset-x-0`, respeitando `env(safe-area-inset-bottom)`, com contagem, valor e ação de expansão. Reservar espaço equivalente na página.
 - **Painel expandido:** título, botão de fechar, foco controlado e retorno do foco ao disparador; fechamento por Escape. Não prender teclado quando fechado.
@@ -614,7 +749,7 @@ Exemplo de componente HTML, com atributos e identificadores em inglês e texto p
 
 Critérios de aceite:
 
-- Dado um jogo aberto e futuro, quando acessar o catálogo, vejo equipes, competição, início e três odds.
+- Dado um jogo aberto e futuro com ofertas curadas/frescas, vejo equipes, competição, início e mercados/seleções com seus atributos; três odds apenas no incremento 1X2.
 - Dado um jogo suspenso, fechado, cancelado ou iniciado, não posso selecioná-lo; o servidor também recusa sua emissão.
 - Quando o filtro não retornar jogos, vejo “Nenhuma partida disponível para este filtro” e posso limpar o filtro.
 
@@ -642,7 +777,7 @@ Critérios de aceite:
 
 Critérios de aceite:
 
-- Se a versão de uma partida mudou desde a seleção, recebo conflito e reviso as novas condições antes de reenviar.
+- Se a versão da partida, mercado ou seleção mudou desde a escolha, recebo conflito e reviso as novas condições antes de reenviar.
 - Dois envios concorrentes com mesma chave, conteúdo e sessão resultam em um único registro e no mesmo código.
 - A mesma chave com conteúdo diferente retorna conflito; outra sessão não consegue recuperar dados dessa emissão.
 - Colisão de código não sobrescreve registro anterior e é resolvida com nova geração dentro do limite de tentativas.
@@ -666,8 +801,8 @@ Critérios de aceite:
 Critérios de aceite:
 
 - Usuário sem autenticação não consegue consultar nem modificar recursos administrativos.
-- Uma partida exige equipes distintas, início futuro e três odds válidas.
-- Mudança de odds incrementa a versão e não altera snapshots existentes.
+- Uma partida exige equipes distintas e início futuro; sua publicação exige mercado/seleção elegível com regra e odd válida, não três colunas fixas de preço.
+- Mudança de preço incrementa `selectionVersion`; mudança de semântica/estado incrementa a versão do registro afetado e não altera snapshots existentes.
 - Jogo referenciado impede edição de equipes/competição/início e exclusão; cancelamento sinaliza bilhetes confirmados afetados.
 
 **US-07.** Como cambista, quero confirmar apenas solicitações válidas com Pix conferido.
@@ -677,7 +812,7 @@ Critérios de aceite:
 - Busco código exato e vejo valores, palpites, prazo e status antes de decidir.
 - Sem declaração de conferência do Pix, a API recusa a confirmação.
 - Após confirmação, constam `CONFIRMED`, operador e horário, sem edição de valor ou seleções.
-- Em `now == expiresAt`, em jogo indisponível ou em registro já decidido, a confirmação é recusada.
+- Em `now == expiresAt`, em jogo/mercado/seleção indisponível, preço/estado/agenda vencidos ou registro já decidido, a confirmação é recusada; nova cotação não muda o preço do snapshot.
 - Se dois operadores decidirem simultaneamente, apenas a primeira transição válida é persistida.
 
 **US-08.** Como cambista, quero cancelar pendências e identificar expirações.
@@ -709,6 +844,29 @@ Critérios de aceite:
 - Não existe endpoint público que liste bilhetes ou consulte dados por telefone/código.
 - Logs de teste de emissão/confirmação não contêm nome, telefone, observações, tokens ou credenciais.
 
+### Épico E6 — Catálogo importado e homologação
+
+**US-11.** Como operador, quero sincronizar e curar ofertas sem comprometer orçamento e bilhetes existentes.
+
+Critérios de aceite:
+
+- Sync desligada por padrão; sem credencial, allowlists, limites, estado de quota ou política experimental de frescor válidos, execução é bloqueada. Nenhum segredo aparece em tela/log/resposta.
+- Toda página/retentativa consome orçamento; erro no corpo com HTTP 200, `429`, timeout, quota esgotada e paginação interrompida produzem estado seguro e visível, nunca fechamento por ausência ou sucesso completo falso.
+- Repetir payload não duplica partidas/mercados/seleções nem renova frescor da odd; IDs iguais de namespaces/bookmakers distintos não colidem. Testar ausência canônica e linhas/participantes distintos.
+- Odds com precisão excedente ou sem preço não são publicadas; timestamp ausente/regressivo e dado vencido bloqueiam emissão e confirmação. Relógios de agenda, estado e preço são independentes.
+- Sync não reabre suspensão manual, não publica oferta nova sem curadoria e não altera snapshots/início de partida referenciada. Reagendamento gera revisão e preserva histórico.
+- Corridas sync × emissão/confirmação/curadoria/suspensão respeitam a hierarquia de locks e rollback; nenhum fluxo público chama o fornecedor.
+- Status exige sessão; disparo exige sessão e CSRF. Host/chave não são parâmetros do navegador. Testar SSRF, redirecionamentos e sanitização de erros.
+
+**US-12.** Como cliente, quero escolher o fornecedor de produção com evidência de cobertura e condições de uso.
+
+Critérios de aceite final (não satisfeitos pelo incremento 1X2):
+
+- Aprovar/expandir baseline amostrada e matriz por competição × partida × mercado × período × linha × participante, incluindo jogadores, escanteios e compostas precificadas.
+- Demonstrar amostras autenticadas atuais, regras, preços e disponibilidade para todas as variantes exigidas; registrar lacunas e proposta/decisão explícita do cliente, sem inferir equivalência por nomes ou IDs.
+- Validar licença para uso/publicação/armazenamento pretendidos, origem/bookmaker, custo/quota, transporte, disponibilidade, suspensão e frescor. Ausência de prova mantém o gate bloqueado.
+- Aprovar thresholds e plano operacional antes de operação real. API-Football pode ser mantida ou substituída; desenvolvimento não cria obrigação de contratação.
+
 ## 11. Métricas de sucesso
 
 ### 11.1. Funil e KPIs
@@ -734,6 +892,7 @@ Critérios de aceite:
 - Registrar `whatsapp_clicked_at` apenas na primeira ocorrência, com chamada autenticada pela sessão emissora e chave idempotente; falha de telemetria não pode impedir abrir o WhatsApp.
 - Registrar o clique com `fetch` e `keepalive: true`, enviando o header CSRF, sem aguardar a resposta para abrir o WhatsApp. Não criar tabela de eventos ou serviço analítico no MVP.
 - Micrometer registra contagens de tentativas e durações por endpoint/resultado, sem identificadores pessoais ou etiquetas de alta cardinalidade.
+- Integração registra contagem global de chamadas/páginas/retentativas, consumo/reserva, execuções completas/parciais/falhas, idade de preço/agenda/estado e ofertas bloqueadas, sem payload bruto ou segredo; não confundir último HTTP bem-sucedido com atualização real da odd.
 - Cliques observados podem ter subcontagem por bloqueios, fechamento de página ou falha de rede. Não há métrica confiável de mensagem enviada, mensagem recebida ou Pix pago automaticamente.
 - Não prometer conversão visita → emissão no MVP: visitas e seleções não serão rastreadas individualmente. Avaliar esse trecho por teste de uso, evitando analytics adicionais.
 - Usar coortes por `created_at`; comparar conversão apenas depois de encerrada a validade de todos os bilhetes da coorte. Para volume operacional, usar `handled_at` e explicitar a diferença.
@@ -756,17 +915,24 @@ Critérios de aceite:
 | R-11 | Uso de versões sem manutenção ou mudanças incompatíveis | Vulnerabilidades e retrabalho | Fixar versões, revisar manutenção da linha Boot 3 escolhida e aplicar atualizações compatíveis |
 | R-12 | Crescimento de escopo para apostas completas e financeiro | Atraso e complexidade | Manter apuração, estorno, carteira, revendedores e integrações fora do MVP; abrir requisitos próprios se necessários |
 | R-13 | Cancelamento de jogo após confirmação | Tratamento financeiro sem suporte automático | Destacar confirmados afetados e preservar snapshots; operador trata comunicação e acordo fora do sistema |
+| R-14 | Quota gratuita, temporadas restritas, indisponibilidade ou paginação parcial | Catálogo incompleto e bloqueios | Allowlists, reserva, orçamento durável global e automação desligada por padrão; não inferir cancelamento por ausência |
+| R-15 | Feed pré-jogo atrasado ou sem suspensão operacional | Aceitar oferta obsoleta | Frescor independente e fail-closed na emissão/confirmação; não presumir que polling resolve trading; validar feed antes de produção |
+| R-16 | Cobertura/regras/licença ou bookmaker não homologados | Falta de paridade e uso inadequado | Matriz e amostras atuais, curadoria, proposta e escolha final do cliente; nenhum contrato de produção assumido |
+| R-17 | Mudança de fornecedor e contratos de agentes antigos | Retrabalho e incompatibilidade | Sincronizar instruções antes de implementar; novo adapter/mapeamento e revisão de schema/transporte/testes, sem prometer troca só por ambiente |
 
 ## 13. Lista de tarefas — granular e detalhada em sprints
 
 Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, ajustável à capacidade. A ordem representa dependências; duração e esforço precisam ser estimados pela equipe. Todas as caixas começam abertas e podem ser marcadas como `[X]` à medida que houver implementação e evidência de validação.
+
+A v1.2 amplia o contrato e exige reestimar o plano: as seis sprints são sequência técnica indicativa, não promessa de paridade em seis semanas. O próximo incremento autorizado para futura implementação é fundação executável + modelo multimercado + adapter limitado em desenvolvimento; 1X2 pode exercitar esse fluxo. Homologação, proposta e escolha do cliente permanecem pendentes e podem exigir novos incrementos antes de produção. Nenhuma tarefa abaixo foi implementada nesta revisão documental.
 
 ### Sprint 0 — Fundação e contratos
 
 **Objetivo:** estabelecer projeto executável, decisões comerciais e ambiente reproduzível. Dependência: nenhuma.
 
 - [ ] S0.01 — Registrar parâmetros do MVP.
-  - [ ] Confirmar mercado 1X2, limite de seleções e regras de tempo regulamentar.
+  - [ ] Aprovar baseline multimercado e regras pendentes; registrar 1X2 apenas como possível primeiro incremento e preservar uma seleção por partida.
+  - [ ] Sincronizar instruções técnicas dos especialistas com o contrato v1.2 antes de implementar as camadas afetadas.
   - [ ] Registrar valores mínimo/máximo, teto de retorno e validade adotados.
   - [ ] Definir WhatsApp, timezone e horários de atendimento da banca.
   - [ ] Registrar política de cancelamento e tratamento manual de Pix atrasado.
@@ -796,20 +962,21 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
 
 ### Sprint 1 — Persistência, segurança e catálogo administrativo
 
-**Objetivo:** permitir que operadores autenticados cadastrem os jogos do catálogo. Dependência: Sprint 0.
+**Objetivo:** permitir catálogo local multimercado, curadoria e adapter provisório seguro. Dependência: Sprint 0 e contratos técnicos sincronizados.
 
 - [ ] S1.01 — Criar migrations de domínio.
   - [ ] Criar `admins` com username único, hash e timestamps.
-  - [ ] Criar `matches` com `match_date`, odds, status, versão e timestamps.
+  - [ ] Criar `matches` com `match_date`, origem, estado, suspensão, versão e timestamps, sem odds fixas.
+  - [ ] Criar `markets` e `market_selections` com identidade composta, semântica, curadoria, odds e metadados de frescor conforme §8.3.
   - [ ] Criar `tickets` com `ticket_code`, idempotência, sessão, valores, decisão e timestamps.
   - [ ] Criar `ticket_items` com snapshots e unicidade por bilhete/partida.
   - [ ] Adicionar FKs restritas, checks e índices definidos no schema.
-  - [ ] Adicionar `TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL` e trigger de `updated_at` às quatro tabelas, com conexões UTC.
+  - [ ] Adicionar `TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL` e trigger de `updated_at` às seis tabelas, com conexões UTC.
   - [ ] Validar migrations em banco vazio e reinício sem alterações indevidas.
 - [ ] S1.02 — Implementar mapeamento JPA.
   - [ ] Criar `BaseEntity` com timestamps gerenciados pelo banco.
   - [ ] Criar entidades, enums em inglês e repositories.
-  - [ ] Mapear `@Version` em partidas e bilhetes.
+  - [ ] Mapear `@Version` em partidas, mercados, seleções e bilhetes; separar metadados operacionais de alterações comerciais.
   - [ ] Validar precisão e escala de `BigDecimal` contra o schema.
   - [ ] Impedir exposição direta de entidades nos controllers.
 - [ ] S1.03 — Implementar acesso administrativo.
@@ -822,12 +989,12 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
   - [ ] Implementar resposta 401 JSON para API e redirecionamento de páginas para login.
 - [ ] S1.04 — Implementar gestão de partidas.
   - [ ] Criar DTOs de criação/edição com Bean Validation.
-  - [ ] Validar equipes distintas, horário futuro e três odds.
+  - [ ] Validar equipes distintas, horário futuro e ofertas por mercado/seleção, com regra e precisão/limites de preço.
   - [ ] Implementar listagem paginada e formulário de cadastro.
   - [ ] Implementar edição com verificação de versão e bloqueio da linha.
   - [ ] Implementar estados aberta, suspensa, fechada e cancelada.
   - [ ] Bloquear alterações estruturais de partidas referenciadas e reabertura de canceladas.
-  - [ ] Implementar `GET /api/matches` e filtros públicos de data/competição.
+  - [ ] Implementar catálogo/detalhe paginados de partidas, mercados e seleções, com versões e filtros públicos.
   - [ ] Implementar `GET /api/config` com whitelist de configurações públicas.
 - [ ] S1.05 — Validar persistência e segurança.
   - [ ] Testar unicidade, checks, FKs e atualização de timestamps inclusive por SQL.
@@ -835,7 +1002,14 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
   - [ ] Testar rejeição de odds inválidas e partidas iniciadas/canceladas.
   - [ ] Testar conversão de filtros de data de `America/Sao_Paulo` para UTC.
 
-**Entrega/aceite da sprint:** operador entra no painel, cadastra jogos válidos e os vê na API pública; acesso não autorizado e dados inválidos são bloqueados.
+- [ ] S1.06 — Implementar adapter API-Football de desenvolvimento.
+  - [ ] Validar documentação e amostra autenticada autorizada antes de alegar integração; não criar conta/plano automaticamente.
+  - [ ] Implementar HTTP backend fora de transações/locks de domínio, mapeamento explícito e upsert idempotente local com locks ordenados.
+  - [ ] Implementar allowlists, quota global durável, reserva, paginação, limites, backoff/429 e estado parcial seguro.
+  - [ ] Implementar relógios independentes, fail-closed, curadoria e preservação de override/reagendamento.
+  - [ ] Proteger status/disparo admin, host fixo e segredos; testar US-11 com fixtures simuladas rotuladas e, separadamente, registrar evidência real permitida.
+
+**Entrega/aceite da sprint:** operador gerencia catálogo local e curadoria; adapter é exercitado com evidência distinguindo testes simulados de amostra real. Catálogo público só expõe ofertas elegíveis. Falta de credencial/amostra é blocker declarado, não integração validada; este incremento não prova paridade de produção.
 
 ### Sprint 2 — Catálogo visual e cupom flutuante
 
@@ -845,13 +1019,13 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
   - [ ] Criar template base com `lang='pt-BR'`, viewport e CSS compilado.
   - [ ] Aplicar `bg-slate-950`, superfícies `bg-slate-900/80` e bordas slate.
   - [ ] Criar cabeçalho, filtros e estados vazio/carregando/erro.
-  - [ ] Criar cards com competição, equipes, horário e três botões de seleção.
+  - [ ] Criar cards e detalhe de mercados/seleções com regra, período, linha e participante; três botões somente no incremento 1X2.
   - [ ] Formatar datas e odds em pt-BR sem alterar identificadores internos.
 - [ ] S2.02 — Implementar estado do cupom em Vanilla JS.
   - [ ] Criar mapa de seleções por `matchId`.
   - [ ] Adicionar/remover item e substituir opção do mesmo jogo.
   - [ ] Implementar limpeza e limite de dez seleções.
-  - [ ] Armazenar versão da partida associada à seleção.
+  - [ ] Armazenar `selectionId` e versões de partida/mercado/seleção no cupom indexado por `matchId`.
   - [ ] Calcular prévia, identificar limites e sinalizar que o cálculo definitivo é do servidor.
   - [ ] Normalizar valor com vírgula para string decimal enviada à API.
 - [ ] S2.03 — Construir cupom responsivo.
@@ -887,9 +1061,9 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
 - [ ] S3.02 — Implementar emissão.
   - [ ] Criar `CreateTicketRequest` e resposta sem exposição JPA.
   - [ ] Normalizar nome/telefone e validar declarações obrigatórias.
-  - [ ] Validar itens repetidos, enums e versões das partidas.
-  - [ ] Implementar bloqueio das partidas em ordem estável.
-  - [ ] Revalidar estado e início dentro da transação.
+  - [ ] Validar IDs internos, relações, itens repetidos e versões de partida/mercado/seleção.
+  - [ ] Implementar hierarquia compartilhada de locks da §8.4.
+  - [ ] Revalidar curadoria, estado, frescor e início dentro da transação, sem chamada externa.
   - [ ] Calcular validade pelo menor prazo e capturar snapshots.
   - [ ] Gerar código aleatório com constraint única e retentativa limitada.
   - [ ] Persistir bilhete/itens com rollback integral em falha.
@@ -938,7 +1112,7 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
 - [ ] S4.02 — Implementar confirmação.
   - [ ] Criar comando específico com versão esperada e declaração de Pix conferido.
   - [ ] Bloquear bilhete e validar status/prazo na transação.
-  - [ ] Bloquear partidas em ordem e validar estado/início.
+  - [ ] Bloquear partidas/mercados/seleções na hierarquia comum e validar curadoria/estado/frescor/início, sem HTTP externo.
   - [ ] Manter odds do snapshot, sem usar cotação atual para recalcular.
   - [ ] Registrar operador autenticado, horário e status `CONFIRMED`.
   - [ ] Criar diálogo de confirmação e feedback pt-BR.
@@ -963,7 +1137,7 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
   - [ ] Testar confirmação com Pix declarado e recusa sem declaração.
   - [ ] Testar confirmação no limite exato de expiração e antes/depois do início.
   - [ ] Testar confirmação versus cancelamento e confirmação versus expiração concorrentes.
-  - [ ] Testar edição de partida versus emissão e suspensão versus confirmação.
+  - [ ] Testar edição/importação versus emissão e suspensão/curadoria/sync versus confirmação, incluindo timestamp regressivo, reenvio e ausência parcial.
   - [ ] Testar cancelamento de jogo com pendentes e confirmados vinculados.
   - [ ] Testar relógio injetável e recuperação após reinício.
 
@@ -1006,13 +1180,14 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
   - [ ] Documentar reinício, recuperação, RPO/RTO e contatos operacionais.
   - [ ] Validar criação inicial de operador sem credenciais padrão.
 - [ ] S5.05 — Conduzir piloto e consolidar pendências.
+  - [ ] Antes de operação real, cumprir US-12: homologar cobertura/regras/fonte/licença e thresholds, obter proposta e decisão do cliente sobre fornecedor de produção.
   - [ ] Realizar teste de emissão com pelo menos dez participantes.
   - [ ] Treinar cambista em Pix manual, expiração e cancelamento de partidas.
   - [ ] Acompanhar duas semanas de piloto com metas tratadas como hipóteses.
   - [ ] Registrar problemas, prioridades e ajustes de parâmetros baseados em evidência.
   - [ ] Atualizar README, documentação de operação e este PRD se houver mudanças de regra.
 
-**Entrega/aceite da sprint:** aplicação pronta para piloto com checks concluídos, restauração demonstrada, indicadores disponíveis e fluxo operacional documentado. As duas semanas de acompanhamento do piloto ocorrem após a preparação técnica desta sprint e não estão incluídas em sua duração sugerida.
+**Entrega/aceite da sprint:** aplicação tecnicamente pronta para piloto com checks concluídos, restauração demonstrada, indicadores disponíveis e fluxo documentado. Piloto com dinheiro/operação real fica condicionado ao gate US-12 e aos demais requisitos aplicáveis; sem isso, somente testes de desenvolvimento rotulados. As duas semanas de acompanhamento ocorrem após a preparação técnica e não estão incluídas na duração sugerida.
 
 ### 13.1. Definição de pronto do MVP
 
@@ -1021,7 +1196,9 @@ Planejamento sugerido em seis sprints de uma semana para uma equipe pequena, aju
 - [ ] Geração, clique no WhatsApp e confirmação manual permanecem eventos distintos.
 - [ ] Código e valores são autoritativos no servidor; snapshots não mudam após emissão.
 - [ ] Idempotência, prazo, concorrência e rollback estão comprovados por testes.
-- [ ] As quatro tabelas contêm timestamps obrigatórios e migrations reproduzíveis.
+- [ ] As seis tabelas de domínio contêm timestamps obrigatórios e migrations reproduzíveis; toda entidade estende `BaseEntity`.
+- [ ] Sync, curadoria, quota, frescor e concorrência atendem US-11, com evidência real separada de simulação.
+- [ ] Paridade multimercado e produção atendem US-12, com decisão final do cliente; 1X2 isolado não satisfaz esta definição de pronto.
 - [ ] Identificadores e logs estão em inglês; conteúdo visível está em pt-BR.
 - [ ] Layout respeita o design escuro, Verde Trevo, responsividade e acessibilidade definidas.
 - [ ] Comandos documentados executam build, checks e testes; nenhuma validação pendente é apresentada como concluída.

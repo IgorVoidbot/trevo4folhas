@@ -1,0 +1,63 @@
+<!doctype html>
+<!--
+  TREVO4FOLHAS — template base (PRD 8.2 / 9.1).
+
+  Uso canônico em uma página (Thymeleaf 3):
+    <!DOCTYPE html>
+    <html
+      lang='pt-BR'
+      xmlns:th='http://www.thymeleaf.org'
+      th:replace="~{fragments/layout :: layout('Título', ~{::content})}"
+    >
+      <div th:fragment='content'>...conteúdo da página...</div>
+    </html>
+
+  Toda página herdada deste base já sai com lang='pt-BR', CSS compilado e os
+  metatags CSRF. Formulários mutáveis incluem o token oculto via
+  th:action (Thymeleaf + Spring Security) ou pelo fragmento
+  fragments/csrf :: csrfField. Nunca embutir scripts ou handlers inline.
+
+  Aspas: JS/CSS usam aspas simples (prettier singleQuote); atributos HTML
+  seguem a normalização fixa do Prettier para aspas duplas.
+-->
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:fragment="layout(title, content)"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${title}">TREVO4FOLHAS</title>
+    <!-- CSRF para requisições via JavaScript (Fetch API); nunca em query string. -->
+    <meta name="csrf-token" th:content="${_csrf.token}" />
+    <meta name="csrf-header" th:content="${_csrf.headerName}" />
+    <link rel="stylesheet" href="/css/app.css" th:href="@{/css/app.css}" />
+  </head>
+  <body class="min-h-screen bg-slate-950 font-sans text-slate-100">
+    <a
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-emerald-500 focus:px-4 focus:py-2 focus:font-semibold focus:text-slate-950"
+      href="#main-content"
+      >Pular para o conteúdo</a
+    >
+    <header class="border-b border-slate-800 bg-slate-900/80">
+      <div
+        class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 p-4 sm:p-6"
+      >
+        <p class="text-lg font-semibold text-slate-100">TREVO4FOLHAS</p>
+        <p class="text-sm text-slate-400">Pré-bilhetes de futebol</p>
+      </div>
+    </header>
+    <main id="main-content" class="mx-auto w-full max-w-7xl p-4 sm:p-6">
+      <th:block th:replace="${content}" />
+    </main>
+    <footer class="border-t border-slate-800 bg-slate-900/80">
+      <div class="mx-auto max-w-7xl p-4 text-sm text-slate-400 sm:p-6">
+        <p>
+          A geração do pré-bilhete não confirma pagamento. A confirmação depende
+          da conferência manual pela banca.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

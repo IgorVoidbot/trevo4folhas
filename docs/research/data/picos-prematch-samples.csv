@@ -1,0 +1,31 @@
+fixture_id,league,listing_description,listing_badge,detail_date,detail_time,category_count,selection_row_count,blank_odds_count,captured_at,source_id
+849476,Brasil - Serie A,vitoria x athl paranaense 24/10/2026 16:30,+950,10/07/2026,20:00,60,515,24,2026-10-24T14:24:36.999192-03:00,1
+849531,Brasil - Serie A,mirassol x sao paulo 24/10/2026 16:30,+950,10/07/2026,20:00,60,514,24,2026-10-24T14:24:39.257387-03:00,1
+849379,Brasil - Serie B,avai x botafogo sp 24/10/2026 16:00,+950,10/07/2026,20:00,60,509,27,2026-10-24T14:24:41.515864-03:00,1
+850929,Brasil - Serie C,ferroviaria x maringa 24/10/2026 17:00,+950,10/07/2026,20:00,50,301,27,2026-10-24T14:24:43.063461-03:00,1
+850976,Brasil - Campeonato Gaucho 2,passo fundo x apafut 24/10/2026 16:00,+664,10/07/2026,20:00,15,72,2,2026-10-24T14:24:44.595140-03:00,1
+851057,Brasil - Campeonato Carioca B,serrano x nova cidade 24/10/2026 15:00,+662,10/07/2026,20:00,14,71,3,2026-10-24T14:24:46.122371-03:00,1
+851382,Brasil - Campeonato Carioca Feminino,real heips (f) x cabofriense (w) 24/10/2026 15:00,+672,10/07/2026,20:00,13,76,5,2026-10-24T14:25:00.919348-03:00,1
+851026,Brasil - Campeonato Paulista U20,santo andre u20 x santos u20 24/10/2026 15:00,+678,10/07/2026,20:00,14,77,5,2026-10-24T14:25:02.445308-03:00,1
+851412,Brasil - Gaucho Women,gremio (f) x juventude (f) 24/10/2026 15:00,+666,10/07/2026,20:00,14,73,4,2026-10-24T14:25:03.971212-03:00,1
+851431,Brasil - Copa Santa Catarina,hercilio luz x blumenau 24/10/2026 18:00,+670,10/07/2026,20:00,14,75,3,2026-10-24T14:25:05.497744-03:00,1
+849435,Espanha - La Liga,atletico madrid x deportivo a coruna 24/10/2026 16:00,+950,10/07/2026,20:00,59,447,30,2026-10-24T14:25:07.107234-03:00,1
+849294,Franca - Ligue 1,lens x paris fc 24/10/2026 15:45,+950,10/07/2026,20:00,60,472,27,2026-10-24T14:25:08.700555-03:00,1
+849143,Italia - Serie A,lazio x parma 24/10/2026 15:45,+950,10/07/2026,20:00,60,475,33,2026-10-24T14:25:10.369559-03:00,1
+849088,Alemanha - Bundesliga II,nurnberg x kaiserslautern 24/10/2026 15:30,+950,10/07/2026,20:00,59,444,25,2026-10-24T14:25:11.912850-03:00,1
+849136,Portugal Primeira Liga,gil vicente x fc porto 24/10/2026 16:30,+950,10/07/2026,20:00,60,511,33,2026-10-24T14:25:34.723182-03:00,1
+849520,Argentina Liga Profesional,banfield x lanus 24/10/2026 14:45,+950,10/07/2026,20:00,60,508,24,2026-10-24T14:25:36.987807-03:00,1
+849326,EUA - MLS,cf montreal x nashville sc 24/10/2026 14:30,+950,10/07/2026,20:00,35,257,30,2026-10-24T14:25:38.532226-03:00,1
+851093,Espanha - Regional League,loja x guadix cf 24/10/2026 15:00,+664,10/07/2026,20:00,13,72,1,2026-10-24T14:25:40.059973-03:00,1
+850942,Espanha - Youth League,santutxu u19 x athletic club u19 24/10/2026 14:30,+656,10/07/2026,20:00,13,68,5,2026-10-24T14:25:41.584040-03:00,1
+849178,Inglaterra - Southern Premier League South,basingstoke x plymouth parkway 24/10/2026 15:45,+670,10/07/2026,20:00,13,75,3,2026-10-24T14:25:43.108413-03:00,1
+851286,Copa Libertadores Women,palmeiras (f) x independiente santa fe (f) 24/10/2026 17:00,+900,10/07/2026,20:00,36,190,16,2026-10-24T14:25:44.638928-03:00,1
+849876,Espanha - Primera Women,barcelona (f) x granada (f) 24/10/2026 15:30,+910,10/07/2026,20:00,27,195,23,2026-10-24T14:25:46.173070-03:00,1
+850228,Inglaterra - Premier League,crystal palace x newcastle 25/10/2026 11:00,+950,10/07/2026,20:00,35,256,25,2026-10-24T14:26:26.156946-03:00,2
+850095,Alemanha - Bundesliga I,tsg hoffenheim x bayer leverkusen 25/10/2026 11:30,+950,10/07/2026,20:00,35,259,24,2026-10-24T14:26:27.700327-03:00,2
+850300,Italia - Serie A,inter milan x fiorentina 25/10/2026 08:30,+950,10/07/2026,20:00,35,254,26,2026-10-24T14:26:29.238244-03:00,2
+850302,Alemanha - Bundesliga Women,tsg 1899 hoffenheim (f) x mainz (w) 25/10/2026 09:00,+874,10/07/2026,20:00,29,177,13,2026-10-24T14:26:30.785124-03:00,2
+851781,Africa do Sul - Diski Challenge,mamelodi sundowns reserves x chippa united reserves 25/10/2026 05:00,+654,10/07/2026,20:00,12,67,6,2026-10-24T14:26:32.325345-03:00,2
+850122,Australia A-League,sydney fc x adelaide united 25/10/2026 01:00,+950,10/07/2026,20:00,37,260,23,2026-10-24T14:26:33.873674-03:00,2
+850128,Coreia do Sul - K-League 2,suwon fc x chungnam asan fc 25/10/2026 02:00,+950,10/07/2026,20:00,37,260,27,2026-10-24T14:26:35.425238-03:00,2
+850130,China Division 1,wuxi wugo x shaanxi union 25/10/2026 08:00,+950,10/07/2026,20:00,37,254,29,2026-10-24T14:26:36.974006-03:00,2

@@ -1,0 +1,24 @@
+# TREVO4FOLHAS — artefatos locais e segredos nunca versionados (DevOps 11).
+# Não ignorar: migrations (src/main/resources/db/migration), lockfiles,
+# Maven Wrapper (.mvn, mvnw, mvnw.cmd) nem configurações necessárias ao build.
+
+# Segredos e ambiente local
+.env
+.env.*
+!.env.example
+
+# Saídas de build (reconstruídas por Maven/npm)
+target/
+node_modules/
+
+# Backups e dumps de banco (volume persistente não é backup)
+*.sql.gz
+*.dump
+backups/
+dumps/
+
+# IDE, editor e temporários
+.idea/
+*.iml
+.DS_Store
+*.log

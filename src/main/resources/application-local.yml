@@ -1,0 +1,19 @@
+# Local development profile only. Values below are development parameters
+# registered in docs/planning/prd-1.2-contract-sync.md, never production
+# acceptance. DB_USERNAME and DB_PASSWORD still come from the environment;
+# there is no default credential in this repository.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/trevo4folhas}
+
+trevo:
+  betting:
+    min-stake-amount: ${MIN_STAKE_AMOUNT:5.00}
+    max-stake-amount: ${MAX_STAKE_AMOUNT:500.00}
+    max-selections: ${MAX_SELECTIONS:10}
+    max-potential-return: ${MAX_POTENTIAL_RETURN:10000.00}
+    ticket-validity-minutes: ${TICKET_VALIDITY_MINUTES:30}
+
+logging:
+  level:
+    com.trevo4folhas: DEBUG

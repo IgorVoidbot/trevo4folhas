@@ -1,0 +1,12 @@
+# Generated and third-party output: never formatted by hand (PRD quality contract
+# covers HTML/CSS/JS sources; Prettier uses single quotes via package.json).
+node_modules/
+target/
+package-lock.json
+src/main/resources/static/css/app.css
+
+# Documentation and configuration maintained outside the Prettier contract.
+*.md
+docs/
+*.yml
+*.yaml

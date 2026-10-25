@@ -1,0 +1,14 @@
+<!doctype html>
+<!--
+  TREVO4FOLHAS — token CSRF para formulários mutáveis (PRD 8.4 / perfil de Segurança).
+  Incluir dentro do form via <th:block th:replace='~{fragments/csrf :: csrfField}' />
+  quando o form não usar th:action (que já injeta o token via Thymeleaf).
+-->
+<input
+  xmlns:th="http://www.thymeleaf.org"
+  th:fragment="csrfField"
+  type="hidden"
+  name="_csrf"
+  th:value="${_csrf.token}"
+  value=""
+/>
