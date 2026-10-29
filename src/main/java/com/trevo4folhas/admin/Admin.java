@@ -6,7 +6,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-/** Operator of the admin panel ({@code admins}). Disabled operators are kept for traceability. */
+/**
+ * Operator of the admin panel ({@code admins}). Disabled operators are kept for traceability.
+ *
+ * <p>Password verification is deliberately NOT a method of this entity: comparing hashes cannot
+ * authenticate a raw password. Real verification happens once, inside Spring Security's {@code
+ * DaoAuthenticationProvider}, through the configured {@code PasswordEncoder} (BCrypt) against the
+ * hash handed to the authentication adapter by {@link #passwordHashForAuthentication()}.
+ */
 @Entity
 @Table(name = "admins")
 public class Admin extends BaseEntity {
@@ -19,7 +26,7 @@ public class Admin extends BaseEntity {
 
   /**
    * BCrypt hash. This is persistence-only data: it must never reach a DTO, a log or an error
-   * message, and there is deliberately no accessor that copies it into API responses.
+   * message, and there is deliberately no public accessor that copies it into API responses.
    */
   @Column(name = "password_hash", nullable = false, length = 255)
   private String passwordHash;
@@ -54,8 +61,13 @@ public class Admin extends BaseEntity {
     this.active = false;
   }
 
-  /** Verifies a candidate hash without exposing the stored value outside this entity. */
-  public boolean matchesPasswordHash(String candidateHash) {
-    return passwordHash.equals(candidateHash);
+  /**
+   * Package-private bridge used only by the authentication adapter ({@link
+   * AdminUserDetailsService}) so Spring Security can verify the raw password with the {@code
+   * PasswordEncoder}. Exposing this outside the package would risk leaking the hash into DTOs, logs
+   * or responses.
+   */
+  String passwordHashForAuthentication() {
+    return passwordHash;
   }
 }

@@ -6,6 +6,14 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/trevo4folhas}
 
+server:
+  servlet:
+    session:
+      cookie:
+        # Local development runs over plain HTTP; Secure is a production-profile
+        # concern only (RNF-07). HttpOnly and SameSite stay as in the base config.
+        secure: false
+
 trevo:
   betting:
     min-stake-amount: ${MIN_STAKE_AMOUNT:5.00}

@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- TREVO4FOLHAS — página inicial da área administrativa autenticada. O logout é POST com
+     CSRF; a autorização é revalidada no backend, não apenas pela visibilidade do botão. -->
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout('Administração', ~{::content})}"
+>
+  <div th:fragment="content">
+    <section class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-100">Administração</h1>
+        <p class="mt-2 text-sm text-slate-400">
+          Olá, <span th:text="${displayName}">Operador</span>. As ferramentas de
+          catálogo e fila de bilhetes serão liberadas nas próximas etapas.
+        </p>
+      </div>
+      <form th:action="@{/admin/logout}" method="post">
+        <button
+          type="submit"
+          class="rounded-xl border border-slate-700 px-4 py-3 font-semibold text-slate-100 hover:border-emerald-500 hover:text-emerald-500"
+        >
+          Sair
+        </button>
+      </form>
+    </section>
+  </div>
+</html>

@@ -27,6 +27,20 @@ spring:
     schemas: t4f_flyway,public
     create-schemas: true
 
+# Session configuration lives under the Boot contract server.servlet.session
+# (the probe SessionConfigurationBindingProbeTest guards the binding).
+server:
+  servlet:
+    session:
+      # RNF-07: 30-minute inactivity timeout; cookies are HttpOnly and SameSite=Lax
+      # everywhere, with Secure in the production posture. The local profile relaxes
+      # Secure so plain-HTTP development keeps working (security profile rule 12).
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: true
+
 trevo:
   betting:
     min-stake-amount: ${MIN_STAKE_AMOUNT}
@@ -34,3 +48,19 @@ trevo:
     max-selections: ${MAX_SELECTIONS}
     max-potential-return: ${MAX_POTENTIAL_RETURN}
     ticket-validity-minutes: ${TICKET_VALIDITY_MINUTES}
+  catalog:
+    bank-time-zone: ${BANK_TIME_ZONE:America/Sao_Paulo}
+    # Empty disables contact; never ship a fake or personal default number.
+    bank-whatsapp-number: ${BANK_WHATSAPP_NUMBER:}
+  security:
+    login-rate-limit:
+      max-attempts: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:5}
+      window-seconds: ${LOGIN_RATE_LIMIT_WINDOW_SECONDS:60}
+  admin:
+    # Controlled one-shot bootstrap of the first operator (PRD RF-16). The values
+    # come only from the deployment environment and have no default credential:
+    # empty means "no bootstrap requested". They are never logged or exposed.
+    bootstrap:
+      username: ${ADMIN_BOOTSTRAP_USERNAME:}
+      display-name: ${ADMIN_BOOTSTRAP_DISPLAY_NAME:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}

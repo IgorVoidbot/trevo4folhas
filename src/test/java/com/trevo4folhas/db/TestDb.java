@@ -27,8 +27,11 @@ import com.github.dockerjava.api.model.Ports;
  * Shared fixture for the migration tests. Every test class runs the real migrations against a real
  * PostgreSQL 16 container (never H2) using the same Flyway configuration as the application
  * (technical history in schema {@code t4f_flyway}, domain tables in {@code public}).
+ *
+ * <p>Visible to other test packages so every suite reuses the same hardened container lifecycle
+ * (live port re-resolution included) instead of starting its own variant.
  */
-final class TestDb {
+public final class TestDb {
 
   static final String FLYWAY_HISTORY_SCHEMA = "t4f_flyway";
   static final String DOMAIN_SCHEMA = "public";
@@ -36,7 +39,7 @@ final class TestDb {
 
   private TestDb() {}
 
-  static PostgreSQLContainer<?> startPostgres16() {
+  public static PostgreSQLContainer<?> startPostgres16() {
     PostgreSQLContainer<?> container =
         new PostgreSQLContainer<>(
             DockerImageName.parse(IMAGE).asCompatibleSubstituteFor("postgres"));
@@ -54,7 +57,7 @@ final class TestDb {
         .load();
   }
 
-  static void migrate(PostgreSQLContainer<?> container) {
+  public static void migrate(PostgreSQLContainer<?> container) {
     configuredFlyway(container).migrate();
   }
 
@@ -82,7 +85,7 @@ final class TestDb {
    * re-obtains the mapping from a live container inspection before every (re)connection instead of
    * trusting a stale one.
    */
-  static String currentJdbcUrl(PostgreSQLContainer<?> container) {
+  public static String currentJdbcUrl(PostgreSQLContainer<?> container) {
     Integer livePort = liveMappedPort(container.getContainerId());
     if (livePort == null) {
       return container.getJdbcUrl();
@@ -111,7 +114,7 @@ final class TestDb {
    * not cause a NullPointerException in teardown that masks the original failure, and a stop error
    * is reported on stderr instead of being thrown from teardown. Ryuk reaps anything left behind.
    */
-  static void stopQuietly(PostgreSQLContainer<?> container) {
+  public static void stopQuietly(PostgreSQLContainer<?> container) {
     if (container == null) {
       return;
     }
