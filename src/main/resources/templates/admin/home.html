@@ -11,8 +11,8 @@
       <div>
         <h1 class="text-2xl font-semibold text-slate-100">Administração</h1>
         <p class="mt-2 text-sm text-slate-400">
-          Olá, <span th:text="${displayName}">Operador</span>. As ferramentas de
-          catálogo e fila de bilhetes serão liberadas nas próximas etapas.
+          Olá, <span th:text="${displayName}">Operador</span>. Gerencie as
+          partidas e revise as ofertas da banca.
         </p>
       </div>
       <form th:action="@{/admin/logout}" method="post">
@@ -24,5 +24,10 @@
         </button>
       </form>
     </section>
+    <a
+      href="/admin/matches"
+      class="mt-6 inline-block text-emerald-400 underline"
+      >Gerenciar catálogo de partidas</a
+    >
   </div>
 </html>

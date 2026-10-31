@@ -359,6 +359,32 @@ class CatalogTicketPersistenceTest {
     assertThat(jdbc.queryForObject("SHOW TIME ZONE", String.class)).isEqualTo("UTC");
   }
 
+  @Test
+  void auditMappingDoesNotDependOnJvmTimezone() {
+    java.util.TimeZone original = java.util.TimeZone.getDefault();
+    try {
+      for (String zone : java.util.List.of("UTC", "America/Sao_Paulo", "Asia/Tokyo")) {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(zone));
+        Match match = newMatch(shortId());
+        matchRepository.save(match);
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        java.time.LocalDateTime stored =
+            jdbc.queryForObject(
+                "SELECT created_at FROM public.matches WHERE id=?",
+                (row, index) -> row.getObject(1, java.time.LocalDateTime.class),
+                match.getId());
+        assertThat(matchRepository.findById(match.getId()).orElseThrow().getCreatedAt())
+            .isEqualTo(stored);
+        assertThat(stored.toInstant(java.time.ZoneOffset.UTC))
+            .isCloseTo(
+                Instant.now(),
+                org.assertj.core.api.Assertions.within(5, java.time.temporal.ChronoUnit.SECONDS));
+      }
+    } finally {
+      java.util.TimeZone.setDefault(original);
+    }
+  }
+
   private static String shortId() {
     return UUID.randomUUID().toString().substring(0, 8);
   }

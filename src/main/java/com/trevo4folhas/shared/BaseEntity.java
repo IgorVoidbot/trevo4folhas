@@ -3,6 +3,9 @@ package com.trevo4folhas.shared;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
@@ -14,7 +17,8 @@ import jakarta.persistence.MappedSuperclass;
  * defaults plus the {@code set_updated_at} trigger created in V1), so the application maps them
  * read-only: JPA never includes them in INSERT or UPDATE statements and there is no second audit
  * mechanism competing with the database. The columns are {@code TIMESTAMP WITHOUT TIME ZONE} and
- * always hold UTC values; convert explicitly at the API boundary.
+ * always hold UTC values; convert explicitly at the API boundary. JDBC 4.2 reads these local fields
+ * directly, avoiding the legacy Timestamp/Calendar conversion through the JVM timezone.
  */
 @MappedSuperclass
 public abstract class BaseEntity {
@@ -24,9 +28,11 @@ public abstract class BaseEntity {
   private UUID id = UUID.randomUUID();
 
   @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+  @JdbcTypeCode(SqlTypes.LOCAL_DATE_TIME)
   private LocalDateTime createdAt;
 
   @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
+  @JdbcTypeCode(SqlTypes.LOCAL_DATE_TIME)
   private LocalDateTime updatedAt;
 
   protected BaseEntity() {

@@ -3,6 +3,9 @@
 # acceptance. DB_USERNAME and DB_PASSWORD still come from the environment;
 # there is no default credential in this repository.
 spring:
+  config:
+    # Local-only .properties syntax; no shell execution or dependency required.
+    import: optional:file:${TREVO_ENV_FILE:.env}[.properties]
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/trevo4folhas}
 

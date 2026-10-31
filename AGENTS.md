@@ -12,11 +12,11 @@ O TREVO4FOLHAS.com gerencia pré-bilhetes de futebol. Leia o [PRD](PRD.md) e as 
 
 ## Estado e mapa do repositório
 
-- `PRD.md` contém requisitos, arquitetura proposta (§8), comandos previstos (§8.6), histórias de usuário e critérios de aceite (§10) e backlog (§13); a árvore da §8.2 não representa arquivos já implementados.
-- `docs/agents/` contém os cinco perfis obrigatórios. Os diretórios de backend, banco, templates, assets, fontes frontend e `deploy/` contêm apenas seus `AGENTS.md` locais, sem implementação.
+- `PRD.md` encaminha ao PRD canônico em `docs/PRD.md`, com requisitos e contratos; `docs/SPRINTS.md` contém os checklists reconciliados. A árvore proposta no PRD não substitui o inventário do código.
+- `docs/agents/` contém os cinco perfis obrigatórios e perfis complementares de arquitetura/backend/frontend. Backend, banco, templates, assets, fontes frontend e `deploy/` já contêm implementação; leia seus `AGENTS.md` locais antes de editar.
 - `docs/research/` contém o levantamento de mercados pré-jogo e seus dados de evidência; é baseline de homologação, não paridade comprovada de fornecedor. `docs/planning/` contém o plano do quadro, autorizações, preflight e o [registro de sincronização de contratos com o PRD 1.2](docs/planning/prd-1.2-contract-sync.md).
-- Não há `pom.xml`, Maven Wrapper, `package.json`, lockfiles, `Makefile`, Dockerfile, Compose, workflows de CI, README ou configuração executável de testes/lint. Não há setup, build, testes ou lint disponíveis nesta fase.
-- Stack, formatação e organização de código descritas aqui são contratos para implementação, não convenções comprovadas por código existente. A fundação executável está prevista na Sprint 0 do PRD.
+- Há `pom.xml`, Maven Wrapper, `package.json`, lockfile, Dockerfile, Compose, testes e checks de formatação/lint. Setup em `docs/README.md`. Não há workflow de CI remoto nem Makefile; não declarar pipeline remoto aprovado.
+- Estado auditado em 31/10/2026: fundação técnica e catálogo/admin locais implementados; Sprint 2 entregue com ofertas fictícias; decisões S0.01 e homologação S1.06 abertas; fluxos S3–S5 não implementados. Consulte [auditoria](docs/planning/project-audit-2026-10-31.md) para evidências e limitações; não inferir emissão/confirmação pela presença de entidades e tabelas.
 
 ## Seleção obrigatória dos especialistas
 
@@ -52,25 +52,26 @@ Os perfis são personas e contratos de execução. Não iniciam processos ou sub
 3. Implemente a menor solução completa; sincronize migrations, testes e documentação quando necessário.
 4. Execute verificações apropriadas existentes e relate resultados, limitações e pendências reais.
 
-O repositório ainda contém documentação e instruções; não há aplicação ou build executável. Comandos previstos no PRD, como `./mvnw spotless:check verify` e `npm run lint`, só podem ser executados após os arquivos correspondentes existirem. Não inventar resultados de testes, benchmarks ou revisão especializada.
+O projeto é executável. Use os manifests presentes e as verificações pertinentes à alteração. Não inventar resultados de testes, benchmarks ou revisão especializada; distinguir execução atual de evidência histórica.
 
-Testes Java seguem `src/test/java`, JUnit 5, MockMvc e PostgreSQL via Testcontainers. Priorizar cálculos, rollback, idempotência, concorrência, expiração e autorização. Adotar cobertura e checks definidos no PRD quando o build for criado.
+Testes Java seguem `src/test/java`, JUnit 5, MockMvc e PostgreSQL 16 via Testcontainers. Priorizar cálculos, rollback, idempotência, concorrência, expiração e autorização. JaCoCo gera relatório; o limiar do PRD ainda não é imposto automaticamente pelo build.
 
-## Ambiente e comandos previstos — ainda indisponíveis
+## Ambiente e comandos disponíveis
 
-As invocações abaixo foram conferidas no PRD §8.6, não executadas; são contratos futuros, não instruções de setup já funcionais. Após criar os manifests, conferir novamente scripts e plugins antes de usá-las.
+Use Java 17 para os checks atuais: o formatter fixado não suporta a JVM 25 disponível no ambiente. Dependências, PostgreSQL e Testcontainers exigem os acessos locais correspondentes. Configuração e execução estão em `docs/README.md`.
 
-- Banco local: `docker compose up -d db`.
+- Banco local: `docker compose --env-file .env.example --env-file .env up -d --wait db`; `POSTGRES_PORT` permite evitar conflito com outro PostgreSQL local.
 - Dependências de assets: `npm ci`; CSS em desenvolvimento: `npm run css:watch`.
 - Aplicação local: `./mvnw spring-boot:run -Dspring-boot.run.profiles=local`, em terminal separado do watcher CSS.
 - Checks frontend: `npm run lint` e `npm run format:check`; gerar CSS antes do pacote Java: `npm run css:build`.
 - Checks Java, testes e cobertura: `./mvnw spotless:check verify`; o contrato inclui integração via Testcontainers e exige Docker disponível.
-- Executar o pacote previsto: `java -jar target/trevo4folhas.jar`; esse artefato ainda não existe.
+- Cupom: `node src/frontend/tests/slip-state.test.mjs`; testes de navegador adicionais estão em `src/frontend/tests/`, com seus requisitos documentados.
+- Executar o pacote após gerar CSS e empacotar: `java -jar target/trevo4folhas.jar`, com ambiente/perfil configurado. Não versionar `target/`.
 
 ## Cuidados na implementação
 
-- CSS deverá ser gerado a partir de `src/frontend/styles/` para `src/main/resources/static/css/app.css`; não editar o resultado gerado nem usar Play CDN em produção. Usar classes Tailwind completas.
-- Dentro do container `app`, o banco será acessado pelo hostname `db`, não `localhost`. Variáveis previstas estão no PRD §8.6; ainda não existe `.env.example` nem carregamento de ambiente implementado.
+- CSS é gerado a partir de `src/frontend/styles/` para `src/main/resources/static/css/app.css`; não editar o resultado gerado nem usar Play CDN em produção. Usar classes Tailwind completas.
+- Dentro do container `app`, acessar o banco pelo hostname `db`, não `localhost`. O perfil `local` carrega `.env` como propriedades Java; outros ambientes usam variáveis/segredos do runtime. `.env`, `.env.admin-access` e demais credenciais locais são ignorados e nunca devem ser versionados. Sync continua desligada por padrão.
 
 ## Commits e pull requests
 

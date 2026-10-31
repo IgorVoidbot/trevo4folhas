@@ -52,6 +52,31 @@ trevo:
     bank-time-zone: ${BANK_TIME_ZONE:America/Sao_Paulo}
     # Empty disables contact; never ship a fake or personal default number.
     bank-whatsapp-number: ${BANK_WHATSAPP_NUMBER:}
+    manual-price-max-age-seconds: ${MANUAL_PRICE_MAX_AGE_SECONDS:0}
+    manual-schedule-max-age-seconds: ${MANUAL_SCHEDULE_MAX_AGE_SECONDS:0}
+    manual-status-max-age-seconds: ${MANUAL_STATUS_MAX_AGE_SECONDS:0}
+  sports:
+    enabled: ${SPORTS_DATA_ENABLED:false}
+    sync-enabled: ${SPORTS_DATA_SYNC_ENABLED:false}
+    policy: ${SPORTS_DATA_POLICY:}
+    api-key: ${API_FOOTBALL_API_KEY:}
+    league-allowlist: ${SPORTS_DATA_LEAGUE_ALLOWLIST:}
+    season-allowlist: ${SPORTS_DATA_SEASON_ALLOWLIST:}
+    bookmaker-allowlist: ${SPORTS_DATA_BOOKMAKER_ALLOWLIST:}
+    market-allowlist: ${SPORTS_DATA_MARKET_ALLOWLIST:}
+    daily-request-budget: ${SPORTS_DATA_DAILY_REQUEST_BUDGET:0}
+    request-reserve: ${SPORTS_DATA_REQUEST_RESERVE:0}
+    quota-state-path: ${SPORTS_DATA_QUOTA_STATE_PATH:}
+    connect-timeout-ms: ${SPORTS_DATA_CONNECT_TIMEOUT_MS:0}
+    read-timeout-ms: ${SPORTS_DATA_READ_TIMEOUT_MS:0}
+    max-run-seconds: ${SPORTS_DATA_MAX_RUN_SECONDS:0}
+    max-pages: ${SPORTS_DATA_MAX_PAGES:0}
+    max-retries: ${SPORTS_DATA_MAX_RETRIES:0}
+    max-concurrent-runs: ${SPORTS_DATA_MAX_CONCURRENT_RUNS:0}
+    max-price-age-seconds: ${SPORTS_DATA_MAX_PRICE_AGE_SECONDS:0}
+    max-schedule-age-seconds: ${SPORTS_DATA_MAX_SCHEDULE_AGE_SECONDS:0}
+    max-status-age-seconds: ${SPORTS_DATA_MAX_STATUS_AGE_SECONDS:0}
+    sync-interval-seconds: ${SPORTS_DATA_SYNC_INTERVAL_SECONDS:3600}
   security:
     login-rate-limit:
       max-attempts: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:5}

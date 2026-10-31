@@ -20,13 +20,21 @@ public class PublicConfigController {
   @GetMapping("/api/config")
   public PublicConfigResponse config() {
     return new PublicConfigResponse(
-        betting.getMinStakeAmount().toPlainString(), betting.getMaxStakeAmount().toPlainString(),
-        betting.getMaxSelections(), betting.getMaxPotentialReturn().toPlainString(),
-        betting.getTicketValidityMinutes(), catalog.bankTimeZone(),
+        betting.getMinStakeAmount().toPlainString(),
+        betting.getMaxStakeAmount().toPlainString(),
+        betting.getMaxSelections(),
+        betting.getMaxPotentialReturn().toPlainString(),
+        betting.getTicketValidityMinutes(),
+        catalog.bankTimeZone(),
         catalog.bankWhatsappNumber().isEmpty() ? null : catalog.bankWhatsappNumber());
   }
 
-  public record PublicConfigResponse(String minStakeAmount, String maxStakeAmount,
-      int maxSelections, String maxPotentialReturn, int ticketValidityMinutes,
-      String bankTimeZone, String bankWhatsappNumber) {}
+  public record PublicConfigResponse(
+      String minStakeAmount,
+      String maxStakeAmount,
+      int maxSelections,
+      String maxPotentialReturn,
+      int ticketValidityMinutes,
+      String bankTimeZone,
+      String bankWhatsappNumber) {}
 }

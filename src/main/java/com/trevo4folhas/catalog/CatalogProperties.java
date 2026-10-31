@@ -14,8 +14,13 @@ import jakarta.validation.constraints.Pattern;
 @ConfigurationProperties(prefix = "trevo.catalog")
 public record CatalogProperties(
     String bankTimeZone,
-    @Pattern(regexp = "|[1-9][0-9]{7,14}", message = "O WhatsApp da banca deve usar formato internacional, somente dígitos.")
-    String bankWhatsappNumber) {
+    @Pattern(
+            regexp = "|[1-9][0-9]{7,14}",
+            message = "O WhatsApp da banca deve usar formato internacional, somente dígitos.")
+        String bankWhatsappNumber,
+    Long manualPriceMaxAgeSeconds,
+    Long manualScheduleMaxAgeSeconds,
+    Long manualStatusMaxAgeSeconds) {
 
   public CatalogProperties {
     bankTimeZone = bankTimeZone == null ? "America/Sao_Paulo" : bankTimeZone;

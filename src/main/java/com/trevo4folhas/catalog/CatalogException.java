@@ -12,6 +12,11 @@ public final class CatalogException extends RuntimeException {
     this.errorCode = errorCode;
   }
 
-  public HttpStatus status() { return status; }
-  public String errorCode() { return errorCode; }
+  public HttpStatus status() {
+    return status;
+  }
+
+  public String errorCode() {
+    return errorCode;
+  }
 }

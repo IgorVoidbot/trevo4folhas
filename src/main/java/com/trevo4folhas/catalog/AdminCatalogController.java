@@ -1,19 +1,20 @@
 package com.trevo4folhas.catalog;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
-import java.util.UUID;
 
-import com.trevo4folhas.catalog.CatalogDtos.MatchView;
-import com.trevo4folhas.catalog.CatalogRequests.CreateMatch;
-import com.trevo4folhas.catalog.CatalogRequests.CreateMarket;
-import com.trevo4folhas.catalog.CatalogRequests.CreateSelection;
 import com.trevo4folhas.catalog.CatalogDtos.MarketView;
+import com.trevo4folhas.catalog.CatalogDtos.MatchView;
 import com.trevo4folhas.catalog.CatalogDtos.SelectionView;
+import com.trevo4folhas.catalog.CatalogRequests.CreateMarket;
+import com.trevo4folhas.catalog.CatalogRequests.CreateMatch;
+import com.trevo4folhas.catalog.CatalogRequests.CreateSelection;
 
 import jakarta.validation.Valid;
 
@@ -21,7 +22,9 @@ import jakarta.validation.Valid;
 public class AdminCatalogController {
   private final CatalogService service;
 
-  public AdminCatalogController(CatalogService service) { this.service = service; }
+  public AdminCatalogController(CatalogService service) {
+    this.service = service;
+  }
 
   @PostMapping("/api/admin/matches")
   @ResponseStatus(HttpStatus.CREATED)
@@ -37,7 +40,26 @@ public class AdminCatalogController {
 
   @PostMapping("/api/admin/markets/{id}/selections")
   @ResponseStatus(HttpStatus.CREATED)
-  public SelectionView createSelection(@PathVariable UUID id, @Valid @RequestBody CreateSelection request) {
+  public SelectionView createSelection(
+      @PathVariable UUID id, @Valid @RequestBody CreateSelection request) {
     return service.createSelection(id, request);
+  }
+
+  @org.springframework.web.bind.annotation.PatchMapping("/api/admin/matches/{id}")
+  public MatchView updateMatch(
+      @PathVariable UUID id, @Valid @RequestBody CatalogRequests.UpdateMatch request) {
+    return service.updateMatch(id, request);
+  }
+
+  @org.springframework.web.bind.annotation.PatchMapping("/api/admin/markets/{id}")
+  public MarketView updateMarket(
+      @PathVariable UUID id, @Valid @RequestBody CatalogRequests.UpdateMarket request) {
+    return service.updateMarket(id, request);
+  }
+
+  @org.springframework.web.bind.annotation.PatchMapping("/api/admin/selections/{id}")
+  public SelectionView updateSelection(
+      @PathVariable UUID id, @Valid @RequestBody CatalogRequests.UpdateSelection request) {
+    return service.updateSelection(id, request);
   }
 }

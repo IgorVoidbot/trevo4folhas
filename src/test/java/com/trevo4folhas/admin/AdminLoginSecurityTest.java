@@ -286,12 +286,12 @@ class AdminLoginSecurityTest {
         .andExpect(jsonPath("$.errorCode").value("CSRF_INVALID"))
         .andExpect(jsonPath("$.message").isNotEmpty());
 
-    // With a valid token the request passes the security layer (the catalog API itself belongs to
-    // a later task, so only "not 401/403" is asserted here).
+    // With valid CSRF the implemented catalog endpoint validates the missing request body.
     mockMvc
         .perform(
             post("/api/admin/matches").session(session).with(fromIp("198.51.100.10")).with(csrf()))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"));
   }
 
   @Test
