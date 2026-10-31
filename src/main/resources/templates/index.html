@@ -1,0 +1,266 @@
+<!doctype html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout('Futebol — TREVO4FOLHAS', ~{::content})}"
+>
+  <div th:fragment="content" class="public-catalog">
+    <div class="catalog-column">
+      <section
+        class="mb-6 rounded-2xl border border-slate-800 bg-linear-to-br from-emerald-500/15 via-slate-900 to-slate-950 p-5 sm:p-6"
+      >
+        <p
+          class="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-300"
+        >
+          Futebol · Pré-jogo
+        </p>
+        <h1 class="text-3xl font-semibold">Seus palpites, um cupom.</h1>
+        <p class="mt-3 max-w-xl text-slate-300">
+          Escolha uma seleção por partida, confira as regras de cada mercado e
+          revise seu cupom. Sem cadastro.
+        </p>
+        <p class="mt-3 text-sm text-amber-200">
+          Prévia de teste. A emissão de pré-bilhetes ainda não está disponível.
+        </p>
+      </section>
+      <form
+        id="catalog-filters"
+        class="public-surface mb-4 grid gap-3 sm:grid-cols-2"
+        aria-label="Filtros de partidas"
+      >
+        <label
+          >Data da partida<input
+            id="filter-date"
+            class="catalog-input"
+            name="date"
+            type="date"
+        /></label>
+        <label
+          >Competição<input
+            id="filter-competition"
+            class="catalog-input"
+            name="competition"
+            maxlength="120"
+            placeholder="Nome completo da competição"
+        /></label>
+        <button type="submit" class="public-primary">Filtrar partidas</button>
+        <button type="button" id="refresh-catalog" class="public-secondary">
+          Atualizar catálogo
+        </button>
+      </form>
+      <p id="catalog-zone" class="mb-3 text-sm text-slate-400"></p>
+      <p
+        id="catalog-feedback"
+        class="mb-4 text-sm text-amber-200"
+        role="status"
+        aria-live="polite"
+      ></p>
+      <div id="match-list" class="space-y-4" aria-busy="true">
+        <p>Carregando partidas…</p>
+      </div>
+      <nav
+        class="my-5 flex flex-wrap items-center gap-3"
+        aria-label="Páginas de partidas"
+      >
+        <button
+          id="catalog-previous"
+          class="public-secondary"
+          type="button"
+          disabled
+        >
+          Anterior
+        </button>
+        <span id="catalog-page" class="text-sm text-slate-300"></span>
+        <button
+          id="catalog-next"
+          class="public-secondary"
+          type="button"
+          disabled
+        >
+          Próxima
+        </button>
+      </nav>
+      <noscript
+        ><p>
+          Ative o JavaScript para consultar os mercados e montar seu cupom.
+        </p></noscript
+      >
+      <a
+        class="inline-block py-3 text-sm text-emerald-300 underline"
+        th:href="@{/admin/login}"
+        >Acesso administrativo</a
+      >
+    </div>
+    <div id="slip-backdrop" class="slip-backdrop" hidden></div>
+    <aside
+      id="bet-slip"
+      class="public-surface bet-slip"
+      data-open="false"
+      aria-labelledby="slip-title"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <h2 id="slip-title" class="text-xl font-semibold" tabindex="-1">
+          Seu cupom
+        </h2>
+        <button
+          id="close-slip"
+          class="public-secondary slip-close"
+          type="button"
+          aria-label="Fechar cupom"
+        >
+          Fechar
+        </button>
+      </div>
+      <p class="mt-2 text-sm text-slate-400">
+        Uma seleção por partida. Apenas uma prévia.
+      </p>
+      <p id="slip-count" class="my-3 text-sm text-emerald-300">0 seleções</p>
+      <ul id="slip-items" class="space-y-3"></ul>
+      <button
+        id="clear-slip"
+        class="mt-3 public-secondary"
+        type="button"
+        disabled
+      >
+        Limpar cupom
+      </button>
+      <form id="review-form" class="mt-5 space-y-4" novalidate>
+        <label class="block" for="stake"
+          >Valor do pré-bilhete (R$)
+          <input
+            id="stake"
+            name="stake"
+            class="catalog-input"
+            inputmode="decimal"
+            autocomplete="off"
+            maxlength="16"
+            placeholder="Ex.: 10,00"
+            aria-describedby="stake-limits stake-error"
+          />
+        </label>
+        <p id="stake-limits" class="text-sm text-slate-400"></p>
+        <p id="stake-error" class="field-error" hidden></p>
+        <dl
+          class="space-y-2 rounded-xl border border-slate-700 bg-slate-950 p-4 tabular-nums"
+        >
+          <div class="flex justify-between gap-3">
+            <dt>Cotação combinada</dt>
+            <dd id="combined-odds">—</dd>
+          </div>
+          <div class="flex justify-between gap-3">
+            <dt>Retorno potencial</dt>
+            <dd id="potential-return" class="font-semibold text-emerald-300">
+              —
+            </dd>
+          </div>
+        </dl>
+        <p class="text-sm text-slate-400">
+          Cálculo estimado. Valores e disponibilidade serão conferidos pela
+          banca na emissão. Retorno potencial não é ganho garantido.
+        </p>
+        <section
+          aria-labelledby="review-title"
+          class="space-y-3 border-t border-slate-700 pt-4"
+        >
+          <h3 id="review-title" class="font-semibold">Revisar identificação</h3>
+          <label class="block" for="bettor-name"
+            >Nome<input
+              id="bettor-name"
+              class="catalog-input"
+              name="bettorName"
+              autocomplete="name"
+              maxlength="120"
+              aria-describedby="name-error"
+          /></label>
+          <p id="name-error" class="field-error" hidden></p>
+          <label class="block" for="bettor-phone"
+            >Telefone / WhatsApp com DDD<input
+              id="bettor-phone"
+              class="catalog-input"
+              name="bettorPhone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              maxlength="24"
+              placeholder="Ex.: (11) 99999-9999"
+              aria-describedby="phone-error"
+          /></label>
+          <p id="phone-error" class="field-error" hidden></p>
+          <details class="rounded-xl border border-slate-700 p-3">
+            <summary
+              class="min-h-11 cursor-pointer font-semibold text-emerald-300"
+            >
+              Regras e privacidade
+            </summary>
+            <p class="mt-2 text-sm text-slate-300">
+              Escolha uma seleção por partida. Confira período, linha,
+              participante e regra antes de selecionar. As condições podem mudar
+              e exigem nova revisão.
+            </p>
+            <p class="mt-2 text-sm text-slate-300">
+              Um pré-bilhete só é válido após a confirmação manual da banca, que
+              confere o Pix. Abrir o WhatsApp não confirma pagamento.
+            </p>
+            <p class="mt-2 text-sm text-slate-300">
+              Nesta prévia, nome e telefone ficam somente nesta aba e são
+              apagados ao recarregar a página. Na emissão, serão usados para
+              identificar o pedido e permitir o atendimento pela banca.
+            </p>
+          </details>
+          <label class="flex min-h-11 items-center gap-3"
+            ><input id="adult-consent" type="checkbox" />Declaro ter 18 anos ou
+            mais.</label
+          >
+          <label class="flex min-h-11 items-center gap-3"
+            ><input id="rules-consent" type="checkbox" />Li as regras e o aviso
+            de privacidade desta prévia.</label
+          >
+          <p id="consent-error" class="field-error" hidden></p>
+          <button
+            id="review-slip"
+            class="public-primary w-full"
+            type="submit"
+            disabled
+          >
+            Revisar cupom
+          </button>
+          <p
+            id="review-feedback"
+            class="text-sm text-amber-200"
+            role="status"
+            aria-live="polite"
+          ></p>
+          <div
+            id="review-summary"
+            class="rounded-xl border border-emerald-700 p-4 text-sm"
+            hidden
+          ></div>
+          <button
+            class="public-primary w-full"
+            type="button"
+            disabled
+            aria-describedby="issuance-note"
+          >
+            Gerar pré-bilhete
+          </button>
+          <p id="issuance-note" class="text-sm text-slate-400">
+            Emissão indisponível nesta prévia. Nenhum código ou pedido foi
+            gerado.
+          </p>
+        </section>
+      </form>
+    </aside>
+    <div class="mobile-slip-bar">
+      <button
+        id="open-slip"
+        class="public-primary w-full"
+        type="button"
+        aria-controls="bet-slip"
+        aria-expanded="false"
+      >
+        <span id="mobile-slip-label">Abrir cupom · 0 seleções</span>
+      </button>
+    </div>
+    <script type="module" th:src="@{/js/public-catalog.js}"></script>
+  </div>
+</html>

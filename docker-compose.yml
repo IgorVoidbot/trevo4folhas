@@ -27,7 +27,7 @@ services:
     ports:
       # Local development only, loopback binding. Do not publish the database
       # port on production hosts (DevOps persona item 9).
-      - '127.0.0.1:5432:5432'
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     volumes:
       - trevo4folhas_postgres_data:/var/lib/postgresql/data
     healthcheck:

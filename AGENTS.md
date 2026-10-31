@@ -12,11 +12,12 @@ O TREVO4FOLHAS.com gerencia pré-bilhetes de futebol. Leia o [PRD](PRD.md) e as 
 
 ## Estado e mapa do repositório
 
-- `PRD.md` contém requisitos, arquitetura (§8), histórias e aceites (§10) e backlog (§13). Sua árvore proposta não prova implementação; descrições antigas de ausência de aplicação/manifests são fotografias da revisão documental, não o estado corrente. Regras de negócio permanecem vigentes.
-- Existem `pom.xml`, Maven Wrapper, `package.json`, `package-lock.json`, Dockerfile, `docker-compose.yml` e `.env.example`. O POM fixa Spring Boot 3.5.16 e Java 17; configura Spotless, JUnit, Testcontainers e relatório JaCoCo. Scripts npm fornecem lint, formatação e compilação Tailwind. Não há README, Makefile ou workflows de CI versionados nesta base.
-- `src/main/java/com/trevo4folhas/` contém a aplicação, configuração comercial/relógio, seis entidades, repositories e DTOs. `src/main/resources/db/migration/` contém Flyway V1–V8; templates contêm fragmentos base/CSRF e `src/frontend/styles/` contém a entrada Tailwind. Há testes em `src/test/java/`. A presença de Spring Security como dependência não comprova login administrativo implementado.
-- `docs/agents/` preserva os cinco perfis obrigatórios; os `AGENTS.md` locais continuam aplicáveis. `docs/research/` é baseline de homologação, não paridade comprovada. `docs/planning/` reúne contratos, decisões e evidências históricas, incluindo o [registro do PRD 1.2](docs/planning/prd-1.2-contract-sync.md).
-- Leia o [estado comprovado](docs/PROJECT_STATE.md) e o [fluxo VPS/local](docs/DEVELOPMENT_WORKFLOW.md) antes de retomar. Código no Git, status do Kanban e arquivos não publicados são fontes distintas: uma tarefa `done` no quadro não comprova que seus fontes estão nesta branch.
+- `PRD.md` encaminha ao PRD canônico em `docs/PRD.md`, com requisitos e contratos; `docs/SPRINTS.md` contém os checklists reconciliados. A árvore proposta no PRD não substitui o inventário do código.
+- `docs/agents/` contém os cinco perfis obrigatórios e perfis complementares de arquitetura/backend/frontend. Backend, banco, templates, assets, fontes frontend e `deploy/` já contêm implementação; leia seus `AGENTS.md` locais antes de editar.
+- Leia o [fluxo de desenvolvimento VPS/local](docs/DEVELOPMENT_WORKFLOW.md) antes de sincronizar clones. O [estado de 29/10](docs/PROJECT_STATE.md) é histórico; a auditoria de 31/10 registra a implementação posterior. Código no Git, Kanban e arquivos não publicados são fontes distintas.
+- `docs/research/` contém o levantamento de mercados pré-jogo e seus dados de evidência; é baseline de homologação, não paridade comprovada de fornecedor. `docs/planning/` contém o plano do quadro, autorizações, preflight e o [registro de sincronização de contratos com o PRD 1.2](docs/planning/prd-1.2-contract-sync.md).
+- Há `pom.xml`, Maven Wrapper, `package.json`, lockfile, Dockerfile, Compose, testes e checks de formatação/lint. Setup em `docs/README.md`. Não há workflow de CI remoto nem Makefile; não declarar pipeline remoto aprovado.
+- Estado auditado em 31/10/2026: fundação técnica e catálogo/admin locais implementados; Sprint 2 entregue com ofertas fictícias; decisões S0.01 e homologação S1.06 abertas; fluxos S3–S5 não implementados. Consulte [auditoria](docs/planning/project-audit-2026-10-31.md) para evidências e limitações; não inferir emissão/confirmação pela presença de entidades e tabelas.
 
 ## Seleção obrigatória dos especialistas
 
@@ -58,23 +59,27 @@ Os perfis são personas e contratos de execução. Não iniciam processos ou sub
 
 Na VPS, todas as operações do GitHub CLI deste projeto usam `/home/hermes/.local/bin/trevo-gh`, nunca um `gh` sem o wrapper. Git e GitHub CLI têm transportes/autenticações distintos; validar a API não prova autorização de push. Nunca imprimir credenciais ou copiar arquivos de autenticação entre máquinas.
 
-Testes Java seguem `src/test/java`, JUnit 5 e PostgreSQL 16 real via Testcontainers; MockMvc atende testes HTTP quando implementados. Priorizar cálculos, rollback, idempotência, concorrência, expiração e autorização. JaCoCo gera relatório, mas o POM atual não configura um gate de cobertura mínima; o requisito do PRD continua pendente de comprovação. Não inventar resultados de testes, benchmarks ou revisão especializada.
 
-## Ambiente e comandos existentes
+O projeto é executável. Use os manifests presentes e as verificações pertinentes à alteração. Não inventar resultados de testes, benchmarks ou revisão especializada; distinguir execução atual de evidência histórica.
 
-Os manifests declaram os comandos abaixo. Sua existência não garante execução em toda máquina: conferir Java 17 compatível, Node compatível com `package.json`, dependências, variáveis e Docker/Testcontainers isolado. Falha estrutural exige diagnóstico, não H2, testes ignorados ou ampliação silenciosa de privilégios.
+Testes Java seguem `src/test/java`, JUnit 5, MockMvc e PostgreSQL 16 via Testcontainers. Priorizar cálculos, rollback, idempotência, concorrência, expiração e autorização. JaCoCo gera relatório; o limiar do PRD ainda não é imposto automaticamente pelo build.
 
-- Banco local: `docker compose up -d db`.
+## Ambiente e comandos disponíveis
+
+Use Java 17 para os checks atuais: o formatter fixado não suporta a JVM 25 disponível no ambiente. Dependências, PostgreSQL e Testcontainers exigem os acessos locais correspondentes. Configuração e execução estão em `docs/README.md`.
+
+- Banco local: `docker compose --env-file .env.example --env-file .env up -d --wait db`; `POSTGRES_PORT` permite evitar conflito com outro PostgreSQL local.
 - Dependências de assets: `npm ci`; CSS em desenvolvimento: `npm run css:watch`.
 - Aplicação local: `./mvnw spring-boot:run -Dspring-boot.run.profiles=local`, em terminal separado do watcher CSS.
 - Checks frontend: `npm run lint` e `npm run format:check`; gerar CSS antes do pacote Java: `npm run css:build`.
 - Checks Java, testes e cobertura: `./mvnw spotless:check verify`; o contrato inclui integração via Testcontainers e exige Docker disponível.
-- Executar o pacote após build bem-sucedido: `java -jar target/trevo4folhas.jar`. Não afirmar que o artefato existe antes de conferir.
+- Cupom: `node src/frontend/tests/slip-state.test.mjs`; testes de navegador adicionais estão em `src/frontend/tests/`, com seus requisitos documentados.
+- Executar o pacote após gerar CSS e empacotar: `java -jar target/trevo4folhas.jar`, com ambiente/perfil configurado. Não versionar `target/`.
 
 ## Cuidados na implementação
 
 - CSS é gerado a partir de `src/frontend/styles/` para `src/main/resources/static/css/app.css`; não editar o resultado gerado nem usar Play CDN em produção. Usar classes Tailwind completas.
-- Dentro do container `app`, o banco é acessado pelo hostname `db`, não `localhost`. Compose recebe variáveis de ambiente/`.env`; o processo Java exige suas variáveis exportadas e não lê automaticamente o `.env` do Compose. Consulte o template `.env.example` sem imprimir valores reais. Não iniciar a aplicação ou tratar seu estado como seguro apenas por existir um manifesto.
+- Dentro do container `app`, acessar o banco pelo hostname `db`, não `localhost`. O perfil `local` carrega `.env` como propriedades Java; outros ambientes usam variáveis/segredos do runtime. `.env`, `.env.admin-access` e demais credenciais locais são ignorados e nunca devem ser versionados. Sync continua desligada por padrão.
 
 ## Commits e pull requests
 

@@ -1,5 +1,7 @@
 # TREVO4FOLHAS — desenvolvimento colaborativo VPS/local
 
+> **Atualização de 31/10/2026:** o PR documental #1 já foi integrado. As branches `hermes/docs-development-workflow` e `wip/t4f-008-cloud-handoff` são referências históricas, não bases para novas tarefas. Os exemplos com esses nomes e com a antiga T4F-008 devem ser lidos nesse contexto. Use a `origin/main` atualizada como base após o preflight; confira a [auditoria atual](planning/project-audit-2026-10-31.md) e os [checklists](SPRINTS.md). O [PROJECT_STATE.md](PROJECT_STATE.md) preserva a fotografia da VPS de 29/10, sem substituir o estado local atual. A consolidação em andamento está registrada [aqui](planning/branch-consolidation-2026-10-31.md).
+
 ## Regras permanentes
 
 - Nunca implementar ou criar commits diretamente na `main`.

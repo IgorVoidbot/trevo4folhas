@@ -1,0 +1,81 @@
+<!doctype html>
+<!-- TREVO4FOLHAS — login administrativo (PRD 6.5 / RF-16). Mensagens genéricas em pt-BR,
+     sem revelar se o usuário existe. Formulário mutável via th:action já recebe o token CSRF. -->
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout('Acesso administrativo', ~{::content})}"
+>
+  <div th:fragment="content">
+    <section class="mx-auto max-w-md">
+      <h1 class="text-2xl font-semibold text-slate-100">
+        Acesso administrativo
+      </h1>
+      <p class="mt-2 text-sm text-slate-400">
+        Área restrita aos operadores da banca. O apostador não precisa de login.
+      </p>
+
+      <p
+        th:if="${param.logout}"
+        class="mt-4 rounded-xl border border-emerald-600 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-500"
+        role="status"
+      >
+        Sessão encerrada com segurança.
+      </p>
+      <p
+        th:if="${param.error}"
+        class="mt-4 rounded-xl border border-rose-600 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+        role="alert"
+      >
+        Usuário ou senha inválidos.
+      </p>
+      <p
+        th:if="${param.csrfError}"
+        class="mt-4 rounded-xl border border-amber-500 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
+        role="alert"
+      >
+        Sua sessão expirou ou o formulário não é mais válido. Tente novamente.
+      </p>
+
+      <form
+        th:action="@{/admin/login}"
+        method="post"
+        class="mt-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-6"
+      >
+        <div>
+          <label for="username" class="block text-sm font-medium text-slate-300"
+            >Usuário</label
+          >
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            required
+            maxlength="100"
+            class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+          />
+        </div>
+        <div class="mt-4">
+          <label for="password" class="block text-sm font-medium text-slate-300"
+            >Senha</label
+          >
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+          />
+        </div>
+        <button
+          type="submit"
+          class="mt-6 w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 hover:bg-emerald-600"
+        >
+          Entrar
+        </button>
+      </form>
+    </section>
+  </div>
+</html>

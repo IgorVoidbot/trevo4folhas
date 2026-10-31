@@ -1,0 +1,262 @@
+<!doctype html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout('Catálogo administrativo', ~{::content})}"
+>
+  <div th:fragment="content" class="space-y-6">
+    <nav aria-label="Administração">
+      <a href="/admin" class="text-emerald-400 underline"
+        >Voltar à administração</a
+      >
+    </nav>
+    <header>
+      <h1 class="text-2xl font-semibold">Catálogo de partidas</h1>
+      <p class="mt-2 text-slate-300">
+        Cadastre partidas e revise mercados e seleções. Somente ofertas abertas,
+        aprovadas e atualizadas aparecem no catálogo público.
+      </p>
+      <p id="bank-zone" class="mt-2 text-sm text-slate-400"></p>
+    </header>
+    <p
+      id="feedback"
+      role="status"
+      aria-live="polite"
+      class="break-words text-emerald-300"
+    ></p>
+    <section
+      class="rounded-xl border border-slate-700 bg-slate-900 p-4"
+      aria-labelledby="filter-title"
+    >
+      <h2 id="filter-title" class="text-xl font-semibold">
+        Partidas cadastradas
+      </h2>
+      <form id="filters" class="mt-4 grid gap-4 sm:grid-cols-3">
+        <label
+          >Data <input class="catalog-input" type="date" name="date"
+        /></label>
+        <label
+          >Competição
+          <input class="catalog-input" name="competition" maxlength="120"
+        /></label>
+        <label
+          >Situação
+          <select class="catalog-input" name="status">
+            <option value="">Todas</option>
+            <option value="OPEN">Aberta</option>
+            <option value="SUSPENDED">Suspensa</option>
+            <option value="CLOSED">Fechada</option>
+            <option value="CANCELLED">Cancelada</option>
+          </select></label
+        >
+        <button class="catalog-button" type="submit">Filtrar partidas</button>
+      </form>
+      <div id="matches" class="mt-4 grid gap-3"></div>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <button id="previous" class="catalog-button" type="button">
+          Anterior</button
+        ><span id="page-label"></span
+        ><button id="next" class="catalog-button" type="button">Próxima</button>
+      </div>
+    </section>
+    <section
+      class="rounded-xl border border-slate-700 bg-slate-900 p-4"
+      aria-labelledby="match-title"
+    >
+      <h2 id="match-title" class="text-xl font-semibold">Nova partida</h2>
+      <form id="match-form" class="mt-4 grid gap-4 sm:grid-cols-2">
+        <label
+          >Competição
+          <input
+            class="catalog-input"
+            name="competition"
+            required
+            maxlength="120"
+        /></label>
+        <label
+          >Mandante
+          <input class="catalog-input" name="homeTeam" required maxlength="120"
+        /></label>
+        <label
+          >Visitante
+          <input class="catalog-input" name="awayTeam" required maxlength="120"
+        /></label>
+        <label
+          >Início no horário da banca
+          <input
+            class="catalog-input"
+            type="datetime-local"
+            name="startsAt"
+            required
+        /></label>
+        <label
+          >Situação
+          <select class="catalog-input" name="status" disabled>
+            <option value="OPEN">Aberta</option>
+            <option value="SUSPENDED">Suspensa</option>
+            <option value="CLOSED">Fechada</option>
+            <option value="CANCELLED">Cancelada</option>
+          </select></label
+        >
+        <label class="self-center"
+          ><input type="checkbox" name="adminSuspended" disabled /> Suspensão
+          administrativa</label
+        >
+        <button class="catalog-button" type="submit">Salvar partida</button
+        ><button id="new-match" class="catalog-button" type="button">
+          Limpar e cadastrar outra
+        </button>
+      </form>
+    </section>
+    <section
+      id="offers-section"
+      hidden
+      class="space-y-6"
+      aria-labelledby="offers-title"
+    >
+      <h2 id="offers-title" class="text-xl font-semibold" tabindex="-1">
+        Mercados da partida selecionada
+      </h2>
+      <div id="markets" class="grid gap-3"></div>
+      <button id="more-markets" class="catalog-button" type="button" hidden>
+        Carregar mais mercados
+      </button>
+      <form
+        id="market-form"
+        class="grid gap-4 rounded-xl border border-slate-700 bg-slate-900 p-4 sm:grid-cols-2"
+      >
+        <h3 id="market-title" class="text-lg font-semibold sm:col-span-2">
+          Novo mercado
+        </h3>
+        <label
+          >Tipo (ex.: 1X2, TOTALS)
+          <input
+            class="catalog-input"
+            name="marketType"
+            required
+            pattern="[A-Z0-9][A-Z0-9_:-]{0,63}"
+        /></label>
+        <label
+          >Nome exibido
+          <input
+            class="catalog-input"
+            name="displayName"
+            required
+            maxlength="255"
+        /></label>
+        <label
+          >Período (ex.: FT)
+          <input class="catalog-input" name="period" required maxlength="64"
+        /></label>
+        <label
+          >Linha (opcional, ex.: 2.5)
+          <input class="catalog-input" name="line" maxlength="64"
+        /></label>
+        <label
+          >Participante (opcional)
+          <input class="catalog-input" name="participant" maxlength="255"
+        /></label>
+        <label
+          >Identificador da regra
+          <input class="catalog-input" name="ruleKey" required maxlength="255"
+        /></label>
+        <label class="sm:col-span-2"
+          >Regra do mercado
+          <textarea
+            class="catalog-input"
+            name="ruleText"
+            required
+            maxlength="4000"
+          ></textarea>
+        </label>
+        <label
+          ><input type="checkbox" name="curated" /> Regra revisada e
+          aprovada</label
+        ><label
+          ><input type="checkbox" name="adminSuspended" disabled /> Suspender
+          mercado</label
+        >
+        <button class="catalog-button" type="submit">Salvar mercado</button
+        ><button id="new-market" class="catalog-button" type="button">
+          Novo mercado
+        </button>
+      </form>
+      <div id="selection-section" hidden class="space-y-4">
+        <h3 class="text-lg font-semibold">Seleções do mercado</h3>
+        <div id="selections" class="grid gap-3"></div>
+        <button
+          id="more-selections"
+          class="catalog-button"
+          type="button"
+          hidden
+        >
+          Carregar mais seleções
+        </button>
+        <form
+          id="selection-form"
+          class="grid gap-4 rounded-xl border border-slate-700 bg-slate-900 p-4 sm:grid-cols-2"
+        >
+          <label
+            >Código (HOME/DRAW/AWAY apenas para 1X2)
+            <input
+              class="catalog-input"
+              name="selectionCode"
+              required
+              pattern="[A-Z0-9][A-Z0-9_:-]{0,63}"
+          /></label>
+          <label
+            >Nome exibido
+            <input
+              class="catalog-input"
+              name="displayName"
+              required
+              maxlength="255"
+          /></label>
+          <label
+            >Cotação
+            <input
+              class="catalog-input"
+              name="odds"
+              required
+              inputmode="decimal"
+              pattern="[0-9]+([.,][0-9]{1,2})?"
+              placeholder="1,85"
+          /></label>
+          <label
+            ><input type="checkbox" name="curated" /> Cotação revisada e
+            aprovada</label
+          ><label
+            ><input type="checkbox" name="adminSuspended" disabled /> Suspender
+            seleção</label
+          >
+          <button class="catalog-button" type="submit">Salvar seleção</button
+          ><button id="new-selection" class="catalog-button" type="button">
+            Nova seleção
+          </button>
+        </form>
+      </div>
+    </section>
+    <section
+      class="rounded-xl border border-slate-700 bg-slate-900 p-4"
+      aria-labelledby="sync-title"
+    >
+      <h2 id="sync-title" class="text-xl font-semibold">
+        Integração esportiva
+      </h2>
+      <p class="mt-2 text-slate-300">
+        Importações exigem configuração e autorização. Ofertas importadas
+        precisam de curadoria.
+      </p>
+      <p id="sync-status" class="my-3 break-words" role="status">
+        Consultando integração…
+      </p>
+      <button id="sync-refresh" class="catalog-button" type="button">
+        Atualizar estado
+      </button>
+      <button id="sync-run" class="catalog-button" type="button">
+        Sincronizar agora
+      </button>
+    </section>
+    <script type="module" src="/js/admin-catalog.js"></script>
+  </div>
+</html>

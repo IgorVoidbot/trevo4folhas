@@ -1,5 +1,7 @@
 # TREVO4FOLHAS — estado comprovado do projeto
 
+> **Registro histórico de 29/10/2026.** Este documento preserva a inspeção da VPS e os checkpoints daquela data. O PR #1 já foi integrado à `main`; autenticação e catálogo foram recuperados e o catálogo público/cupom foi implementado posteriormente. Para o estado local posterior e os testes de 31/10, consulte a [auditoria do projeto](planning/project-audit-2026-10-31.md), os [checklists](SPRINTS.md) e o [registro de consolidação das branches](planning/branch-consolidation-2026-10-31.md). Resultados locais não revalidam automaticamente a VPS.
+
 ## Referência desta inspeção
 
 - Inspeção inicial em **29/10/2026 (UTC)**, na VPS, no projeto `/home/hermes/projects/trevo4folhas`; estado Docker complementado por leitura direta em **29/10/2026 às 14:16 UTC**.

@@ -1,0 +1,1 @@
+{"get":"odds","errors":[],"results":1,"paging":{"current":1,"total":1},"response":[{"fixture":{"id":900001},"league":{"id":999,"season":2030},"update":"2026-10-31T03:00:00Z","bookmakers":[{"id":99,"name":"Fornecedor simulado","bets":[{"id":1,"name":"Match Winner","values":[{"value":"Home","odd":"1.85"},{"value":"Draw","odd":"3.20"},{"value":"Away","odd":"4.00"}]}]}]}]}

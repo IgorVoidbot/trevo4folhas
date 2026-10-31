@@ -27,6 +27,20 @@ spring:
     schemas: t4f_flyway,public
     create-schemas: true
 
+# Session configuration lives under the Boot contract server.servlet.session
+# (the probe SessionConfigurationBindingProbeTest guards the binding).
+server:
+  servlet:
+    session:
+      # RNF-07: 30-minute inactivity timeout; cookies are HttpOnly and SameSite=Lax
+      # everywhere, with Secure in the production posture. The local profile relaxes
+      # Secure so plain-HTTP development keeps working (security profile rule 12).
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: true
+
 trevo:
   betting:
     min-stake-amount: ${MIN_STAKE_AMOUNT}
@@ -34,3 +48,44 @@ trevo:
     max-selections: ${MAX_SELECTIONS}
     max-potential-return: ${MAX_POTENTIAL_RETURN}
     ticket-validity-minutes: ${TICKET_VALIDITY_MINUTES}
+  catalog:
+    bank-time-zone: ${BANK_TIME_ZONE:America/Sao_Paulo}
+    # Empty disables contact; never ship a fake or personal default number.
+    bank-whatsapp-number: ${BANK_WHATSAPP_NUMBER:}
+    manual-price-max-age-seconds: ${MANUAL_PRICE_MAX_AGE_SECONDS:0}
+    manual-schedule-max-age-seconds: ${MANUAL_SCHEDULE_MAX_AGE_SECONDS:0}
+    manual-status-max-age-seconds: ${MANUAL_STATUS_MAX_AGE_SECONDS:0}
+  sports:
+    enabled: ${SPORTS_DATA_ENABLED:false}
+    sync-enabled: ${SPORTS_DATA_SYNC_ENABLED:false}
+    policy: ${SPORTS_DATA_POLICY:}
+    api-key: ${API_FOOTBALL_API_KEY:}
+    league-allowlist: ${SPORTS_DATA_LEAGUE_ALLOWLIST:}
+    season-allowlist: ${SPORTS_DATA_SEASON_ALLOWLIST:}
+    bookmaker-allowlist: ${SPORTS_DATA_BOOKMAKER_ALLOWLIST:}
+    market-allowlist: ${SPORTS_DATA_MARKET_ALLOWLIST:}
+    daily-request-budget: ${SPORTS_DATA_DAILY_REQUEST_BUDGET:0}
+    request-reserve: ${SPORTS_DATA_REQUEST_RESERVE:0}
+    quota-state-path: ${SPORTS_DATA_QUOTA_STATE_PATH:}
+    connect-timeout-ms: ${SPORTS_DATA_CONNECT_TIMEOUT_MS:0}
+    read-timeout-ms: ${SPORTS_DATA_READ_TIMEOUT_MS:0}
+    max-run-seconds: ${SPORTS_DATA_MAX_RUN_SECONDS:0}
+    max-pages: ${SPORTS_DATA_MAX_PAGES:0}
+    max-retries: ${SPORTS_DATA_MAX_RETRIES:0}
+    max-concurrent-runs: ${SPORTS_DATA_MAX_CONCURRENT_RUNS:0}
+    max-price-age-seconds: ${SPORTS_DATA_MAX_PRICE_AGE_SECONDS:0}
+    max-schedule-age-seconds: ${SPORTS_DATA_MAX_SCHEDULE_AGE_SECONDS:0}
+    max-status-age-seconds: ${SPORTS_DATA_MAX_STATUS_AGE_SECONDS:0}
+    sync-interval-seconds: ${SPORTS_DATA_SYNC_INTERVAL_SECONDS:3600}
+  security:
+    login-rate-limit:
+      max-attempts: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:5}
+      window-seconds: ${LOGIN_RATE_LIMIT_WINDOW_SECONDS:60}
+  admin:
+    # Controlled one-shot bootstrap of the first operator (PRD RF-16). The values
+    # come only from the deployment environment and have no default credential:
+    # empty means "no bootstrap requested". They are never logged or exposed.
+    bootstrap:
+      username: ${ADMIN_BOOTSTRAP_USERNAME:}
+      display-name: ${ADMIN_BOOTSTRAP_DISPLAY_NAME:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}

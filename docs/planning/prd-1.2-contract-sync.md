@@ -57,8 +57,8 @@ Valores **experimentais de desenvolvimento**, configurados explicitamente (sem d
 | `SPORTS_DATA_REQUEST_RESERVE` | `10` | Reserva de diagnóstico, positiva e menor que o total (RF-22) |
 | `SPORTS_DATA_MAX_CONCURRENT_RUNS` | `1` | Uma instância executora (RF-22) |
 | `SPORTS_DATA_MAX_PAGES` | `10` | `/odds` pagina a 10 itens/página (guia oficial); limite de páginas por execução |
-| `SPORTS_DATA_MAX_RUN_SECONDS` | `300` | Duração máxima de execução |
-| `SPORTS_DATA_CONNECT_TIMEOUT_MS` / `SPORTS_DATA_READ_TIMEOUT_MS` | `10000` / `30000` | Timeouts finitos e positivos |
+| `SPORTS_DATA_MAX_RUN_SECONDS` | `120` | Duração máxima de execução; reconciliada em 31/10/2026 com o limite conservador implementado em `SportsProperties` |
+| `SPORTS_DATA_CONNECT_TIMEOUT_MS` / `SPORTS_DATA_READ_TIMEOUT_MS` | `10000` / `15000` | Timeouts finitos e positivos; leitura reconciliada em 31/10/2026 com o limite implementado |
 | `SPORTS_DATA_MAX_RETRIES` | `2` | Retentativas finitas com backoff/jitter; cada retentativa consome orçamento |
 
 Regras de operação:
