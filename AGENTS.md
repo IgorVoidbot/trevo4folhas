@@ -14,6 +14,7 @@ O TREVO4FOLHAS.com gerencia pré-bilhetes de futebol. Leia o [PRD](PRD.md) e as 
 
 - `PRD.md` encaminha ao PRD canônico em `docs/PRD.md`, com requisitos e contratos; `docs/SPRINTS.md` contém os checklists reconciliados. A árvore proposta no PRD não substitui o inventário do código.
 - `docs/agents/` contém os cinco perfis obrigatórios e perfis complementares de arquitetura/backend/frontend. Backend, banco, templates, assets, fontes frontend e `deploy/` já contêm implementação; leia seus `AGENTS.md` locais antes de editar.
+- Leia o [fluxo de desenvolvimento VPS/local](docs/DEVELOPMENT_WORKFLOW.md) antes de sincronizar clones. O [estado de 29/10](docs/PROJECT_STATE.md) é histórico; a auditoria de 31/10 registra a implementação posterior. Código no Git, Kanban e arquivos não publicados são fontes distintas.
 - `docs/research/` contém o levantamento de mercados pré-jogo e seus dados de evidência; é baseline de homologação, não paridade comprovada de fornecedor. `docs/planning/` contém o plano do quadro, autorizações, preflight e o [registro de sincronização de contratos com o PRD 1.2](docs/planning/prd-1.2-contract-sync.md).
 - Há `pom.xml`, Maven Wrapper, `package.json`, lockfile, Dockerfile, Compose, testes e checks de formatação/lint. Setup em `docs/README.md`. Não há workflow de CI remoto nem Makefile; não declarar pipeline remoto aprovado.
 - Estado auditado em 31/10/2026: fundação técnica e catálogo/admin locais implementados; Sprint 2 entregue com ofertas fictícias; decisões S0.01 e homologação S1.06 abertas; fluxos S3–S5 não implementados. Consulte [auditoria](docs/planning/project-audit-2026-10-31.md) para evidências e limitações; não inferir emissão/confirmação pela presença de entidades e tabelas.
@@ -47,10 +48,17 @@ Os perfis são personas e contratos de execução. Não iniciam processos ou sub
 
 ## Fluxo de execução e verificação
 
-1. Identifique requisito, arquivos e perfis aplicáveis; mantenha alterações focadas na tarefa autorizada.
-2. Defina contratos entre API, interface e schema antes de mudanças que cruzem camadas.
-3. Implemente a menor solução completa; sincronize migrations, testes e documentação quando necessário.
-4. Execute verificações apropriadas existentes e relate resultados, limitações e pendências reais.
+1. Antes de retomar, verifique branch, alterações locais/staged/não rastreadas, histórico, PRs e alterações remotas após `git fetch`. Preserve arquivos locais e não use stash, reset, clean, rebase ou resolução automática de conflitos sem autorização específica.
+2. Nunca implementar ou criar commits diretamente na `main`. Trabalhe em uma branch de tarefa baseada em referência remota conferida. Não troque de branch sobre trabalho pendente sem um plano de preservação aprovado.
+3. Uma tarefa por vez e um responsável de escrita por branch. Identifique requisito, arquivos, perfis, critérios de aceite e ponto de passagem VPS/local; não editar simultaneamente os mesmos arquivos em clones diferentes.
+4. Defina contratos entre API, interface e schema antes de mudanças que cruzem camadas. Implemente a menor solução completa; sincronize migrations, testes e documentação quando necessário.
+5. Execute os testes e checks pertinentes antes de enviar alterações; registre comandos, resultados e limitações. Para documentação isolada, revise links, comandos, consistência e `git diff --check`; não apresente isso como validação funcional da aplicação.
+6. Revise o diff e os arquivos staged, faça commit em inglês e envie somente a branch autorizada. Crie Pull Request destinado à `main` para revisão; use Draft enquanto houver trabalho ou validação pendente. Não misture documentação com uma implementação posterior na mesma branch.
+7. Nunca fazer merge ou deploy sem autorização explícita para a operação. Aprovação de implementação, commit, push ou criação de PR não autoriza integração à `main`, publicação de outra branch ou implantação.
+8. Nunca versionar credenciais, tokens ou arquivos `.env` reais, nem incluí-los em logs, diffs ou PRs. Somente `.env.example` com placeholders pode ser versionado. Adicione arquivos por caminhos explícitos, nunca com `git add .` ou `git add -A` sem revisão individual.
+
+Na VPS, todas as operações do GitHub CLI deste projeto usam `/home/hermes/.local/bin/trevo-gh`, nunca um `gh` sem o wrapper. Git e GitHub CLI têm transportes/autenticações distintos; validar a API não prova autorização de push. Nunca imprimir credenciais ou copiar arquivos de autenticação entre máquinas.
+
 
 O projeto é executável. Use os manifests presentes e as verificações pertinentes à alteração. Não inventar resultados de testes, benchmarks ou revisão especializada; distinguir execução atual de evidência histórica.
 

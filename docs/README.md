@@ -9,6 +9,8 @@ A página `/` exibe o catálogo público e a montagem/revisão do cupom, com emi
 - [PRD](PRD.md): produto, arquitetura, UX, dados, requisitos, aceites, métricas e decisões pendentes.
 - [Sprints](SPRINTS.md): backlog preservado, dependências, responsáveis e evidência de conclusão.
 - [Auditoria atual](planning/project-audit-2026-10-31.md): implementação conferida, checks executados, lacunas e critérios dos checklists.
+- [Fluxo VPS/local](DEVELOPMENT_WORKFLOW.md): regras de branches, revisão e passagem de trabalho; [estado histórico da VPS](PROJECT_STATE.md), preservado com contexto temporal.
+- [Consolidação das branches](planning/branch-consolidation-2026-10-31.md): origem e preservação dos checkpoints antes de organizar as referências.
 - [Arquitetura](agents/ARCHITECT_AGENT.md): coordenação técnica e contratos.
 - [Backend](agents/BACKEND_AGENT.md): Java, APIs e integridade transacional.
 - [Frontend](agents/FRONTEND_AGENT.md): UI/UX e fluxo sem cadastro.
