@@ -78,6 +78,9 @@ trevo:
     max-status-age-seconds: ${SPORTS_DATA_MAX_STATUS_AGE_SECONDS:0}
     sync-interval-seconds: ${SPORTS_DATA_SYNC_INTERVAL_SECONDS:3600}
   security:
+    ticket-rate-limit:
+      max-attempts: ${TICKET_RATE_LIMIT_MAX_ATTEMPTS:10}
+      window-seconds: ${TICKET_RATE_LIMIT_WINDOW_SECONDS:60}
     login-rate-limit:
       max-attempts: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:5}
       window-seconds: ${LOGIN_RATE_LIMIT_WINDOW_SECONDS:60}

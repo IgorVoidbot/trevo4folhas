@@ -4,7 +4,7 @@ A implementação continua no repositório Projeto-aposta. O produto é uma plat
 
 ## Documentos de referência
 
-A página `/` exibe o catálogo público e a montagem/revisão do cupom, com emissão ainda desabilitada. O login administrativo permanece em `/admin/login`. Comportamento, testes e limites estão na [validação da Sprint 2](planning/sprint-2-validation.md); screenshots locais em `target/verification-sprint2/`.
+A página `/` exibe o catálogo público, revisão, emissão de pré-bilhetes pendentes e compartilhamento explícito pelo WhatsApp. O login administrativo permanece em `/admin/login`. Comportamento, testes e limites estão nas validações da [Sprint 2](planning/sprint-2-validation.md) e [Sprint 3](planning/sprint-3-validation.md); screenshots locais em `target/verification-sprint3/`. A fila e a confirmação administrativa pertencem à Sprint 4.
 
 - [PRD](PRD.md): produto, arquitetura, UX, dados, requisitos, aceites, métricas e decisões pendentes.
 - [Sprints](SPRINTS.md): backlog preservado, dependências, responsáveis e evidência de conclusão.
@@ -62,3 +62,13 @@ A descrição antiga de repositório apenas documental foi superada pela existê
 ## Atualização de 30/10/2026
 
 PRD 1.3 centralizado em docs/, backlog extraído sem renumerar tarefas, perfis solicitados adicionados e PRD.md da raiz convertido em encaminhamento. Nenhuma funcionalidade da aplicação foi modificada por essa organização documental.
+
+### Emissão e WhatsApp no desenvolvimento local
+
+Configure `BANK_WHATSAPP_NUMBER` no `.env` com número internacional somente dígitos; reinicie a aplicação no IntelliJ após atualizar o código/configuração. Em `/`, escolha palpites disponíveis, informe valor, nome e telefone, leia e aceite as declarações, clique em **Revisar cupom** e depois **Gerar pré-bilhete**. Código, prazo e resumo aparecem somente após persistência. Use **Enviar para o WhatsApp** por decisão própria; confira e envie a mensagem no aplicativo. Clique ou geração nunca confirmam o Pix.
+
+Em falha de conexão, mantenha a aba aberta e use **Tentar novamente**: a mesma chave/corpo recupera o pedido sem duplicação. Mudança de oferta exige atualizar o catálogo, escolher novamente e revisar. Não há consulta pública por código/telefone; se a sessão original foi perdida, consulte a banca. Os dados pessoais não ficam em storage do navegador.
+
+Limite local padrão: `TICKET_RATE_LIMIT_MAX_ATTEMPTS=10` por `TICKET_RATE_LIMIT_WINDOW_SECONDS=60`, por endereço remoto e sessão, em memória do processo; configuração experimental de desenvolvimento, sem homologação de capacidade/abuso em produção. A sync esportiva segue desligada e emissão não consulta o fornecedor.
+
+Validação de navegador: após gerar CSS e `./mvnw spotless:check verify`, execute `python3 src/frontend/tests/run-ticket-issuance-browser.py`. Requer Docker, Java 17 em `/usr/lib/jvm/java-17-openjdk-amd64`, Chrome em `/usr/bin/google-chrome` e Playwright importável (ou caminho em `PLAYWRIGHT_MODULE`). O runner cria banco/app temporários, operador e ofertas fictícias, usa contato fictício, bloqueia a navegação externa do WhatsApp e encerra os processos. Não usa as credenciais administrativas locais. Relatórios/screenshots ficam em `target/verification-sprint2/` e `target/verification-sprint3/`, sem versionamento.

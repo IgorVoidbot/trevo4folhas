@@ -59,3 +59,8 @@ Os testes visuais são em Chrome headless com viewports emulados, cores renderiz
 A árvore inicialmente tinha implementação das Sprints 1/2, organização documental e alterações locais de IDE ainda sem commit. O checkpoint reúne o código funcional, os testes, a documentação e os checklists reconciliados. As mudanças preexistentes em `.idea/misc.xml` e a exclusão de `.idea/modules.xml` foram preservadas fora do commit. Credenciais, `.env*` privados, estado operacional de quota, payloads autenticados privados, dependências e `target/` ficam excluídos.
 
 O assunto do commit descreve a entrega de catálogo/cupom e a reconciliação das sprints; o hash será informado no retorno da execução, sem autorreferência circular neste arquivo. Não houve push, merge, tag ou deploy. O próximo incremento funcional é S3, com S0.01/S1.06 acompanhados como pendências separadas.
+
+
+## Incremento posterior — Sprint 3
+
+A implementação da Sprint 3 foi concluída localmente após esta auditoria inicial, na branch `feat/sprint-3-ticket-issuance`. Consulte [contrato](sprint-3-contract.md) e [validação](sprint-3-validation.md) para emissão transacional, idempotência, WhatsApp e evidências atuais (173 testes Java, quatro de cupom e navegador 360/1440). O inventário e as contagens anteriores deste documento permanecem como evidência da auditoria inicial. S0.01, S1.06, S4 e S5 continuam pendentes nos escopos indicados.

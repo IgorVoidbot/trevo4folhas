@@ -346,6 +346,19 @@ public class CatalogRepository {
     return jdbc.queryForObject(sql, parameters(now).addValue("id", id), Boolean.class);
   }
 
+  public java.util.Set<UUID> eligibleSelectionIds(java.util.Collection<UUID> ids, Instant now) {
+    return java.util.Set.copyOf(
+        jdbc.queryForList(
+            "SELECT s.id FROM public.market_selections s JOIN public.markets k ON k.id=s.market_id JOIN public.matches m ON m.id=k.match_id WHERE s.id IN (:ids) AND "
+                + matchEligibility()
+                + " AND "
+                + marketEligibility()
+                + " AND "
+                + selectionEligibility(),
+            parameters(now).addValue("ids", ids),
+            UUID.class));
+  }
+
   public CatalogDtos.Page<MatchView> matches(
       boolean admin,
       Instant from,

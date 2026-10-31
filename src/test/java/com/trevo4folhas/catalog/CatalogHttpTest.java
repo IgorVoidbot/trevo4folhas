@@ -89,7 +89,8 @@ class CatalogHttpTest {
             "maxPotentialReturn",
             "ticketValidityMinutes",
             "bankTimeZone",
-            "bankWhatsappNumber");
+            "bankWhatsappNumber",
+            "rulesVersion");
     assertThat(json.get("minStakeAmount").isTextual()).isTrue();
     assertThat(json.get("minStakeAmount").asText()).isEqualTo("5.00");
     assertThat(json.get("maxStakeAmount").asText()).isEqualTo("500.00");

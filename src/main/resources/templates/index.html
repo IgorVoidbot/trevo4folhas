@@ -20,7 +20,8 @@
           revise seu cupom. Sem cadastro.
         </p>
         <p class="mt-3 text-sm text-amber-200">
-          Prévia de teste. A emissão de pré-bilhetes ainda não está disponível.
+          Ambiente de testes. A geração cria um pedido pendente; a banca precisa
+          conferir o Pix e confirmar manualmente.
         </p>
       </section>
       <form
@@ -169,7 +170,7 @@
               class="catalog-input"
               name="bettorName"
               autocomplete="name"
-              maxlength="120"
+              maxlength="100"
               aria-describedby="name-error"
           /></label>
           <p id="name-error" class="field-error" hidden></p>
@@ -202,9 +203,10 @@
               confere o Pix. Abrir o WhatsApp não confirma pagamento.
             </p>
             <p class="mt-2 text-sm text-slate-300">
-              Nesta prévia, nome e telefone ficam somente nesta aba e são
-              apagados ao recarregar a página. Na emissão, serão usados para
-              identificar o pedido e permitir o atendimento pela banca.
+              Ao gerar, nome e telefone são enviados e registrados para
+              identificar o pedido e permitir o atendimento pela banca. O resumo
+              só é compartilhado no WhatsApp por sua ação. Não há conta ou
+              carteira.
             </p>
           </details>
           <label class="flex min-h-11 items-center gap-3"
@@ -213,7 +215,7 @@
           >
           <label class="flex min-h-11 items-center gap-3"
             ><input id="rules-consent" type="checkbox" />Li as regras e o aviso
-            de privacidade desta prévia.</label
+            de privacidade. Versão: PREVIEW-2026-10-31-V1.</label
           >
           <p id="consent-error" class="field-error" hidden></p>
           <button
@@ -236,6 +238,7 @@
             hidden
           ></div>
           <button
+            id="generate-ticket"
             class="public-primary w-full"
             type="button"
             disabled
@@ -244,11 +247,17 @@
             Gerar pré-bilhete
           </button>
           <p id="issuance-note" class="text-sm text-slate-400">
-            Emissão indisponível nesta prévia. Nenhum código ou pedido foi
-            gerado.
+            Revise o cupom antes de gerar. Após o envio, mantenha esta aba
+            aberta para recuperar a mesma tentativa em caso de falha.
           </p>
         </section>
       </form>
+      <section
+        id="ticket-result"
+        class="mt-5 space-y-4 border-t border-slate-700 pt-4"
+        aria-label="Pré-bilhete persistido"
+        hidden
+      ></section>
     </aside>
     <div class="mobile-slip-bar">
       <button

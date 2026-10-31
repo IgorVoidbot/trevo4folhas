@@ -92,6 +92,12 @@ public class ImportService {
     UUID matchId = fixtureId(row.fixtureId());
     catalog.match(matchId, true);
     Instant now = clock.instant();
+    // PostgreSQL stores microseconds. Compare the same precision we persist so a
+    // replay cannot renew a price or bypass same-timestamp price-change detection.
+    Instant updatedAt =
+        row.updatedAt() == null
+            ? null
+            : row.updatedAt().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
     var p =
         new MapSqlParameterSource()
             .addValue("id", UUID.randomUUID())
@@ -107,7 +113,7 @@ public class ImportService {
             .addValue("rule", row.ruleText())
             .addValue("specifiers", row.specifiersKey())
             .addValue("now", Timestamp.from(now))
-            .addValue("updated", row.updatedAt() == null ? null : Timestamp.from(row.updatedAt()));
+            .addValue("updated", updatedAt == null ? null : Timestamp.from(updatedAt));
     jdbc.update(
         """
         INSERT INTO public.markets (id,match_id,source_namespace,bookmaker_id,external_market_id,market_type,display_name,period,line,participant,rule_key,rule_text,specifiers_key,provider_status)
@@ -164,10 +170,10 @@ public class ImportService {
             p,
             (rs, n) -> rs.getTimestamp(1) == null ? null : rs.getTimestamp(1).toInstant());
     boolean regression =
-        previous != null && (row.updatedAt() == null || row.updatedAt().isBefore(previous));
+        previous != null && (row.updatedAt() == null || updatedAt.isBefore(previous));
     boolean sameTimestampPriceChange =
         previous != null
-            && previous.equals(row.updatedAt())
+            && previous.equals(updatedAt)
             && row.odds() != null
             && new java.math.BigDecimal(selection.odds()).compareTo(row.odds()) != 0;
     boolean selectionConflict =
