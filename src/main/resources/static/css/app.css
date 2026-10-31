@@ -45,6 +45,7 @@
     --text-3xl--line-height: calc(2.25 / 1.875);
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
+    --font-weight-bold: 700;
     --tracking-widest: 0.1em;
     --radius-lg: 0.5rem;
     --radius-xl: 0.75rem;
@@ -270,6 +271,9 @@
   .min-h-11 {
     min-height: calc(var(--spacing) * 11);
   }
+  .min-h-48 {
+    min-height: calc(var(--spacing) * 48);
+  }
   .min-h-screen {
     min-height: 100vh;
   }
@@ -442,6 +446,9 @@
   .pt-4 {
     padding-top: calc(var(--spacing) * 4);
   }
+  .text-center {
+    text-align: center;
+  }
   .text-left {
     text-align: left;
   }
@@ -468,6 +475,10 @@
     font-size: var(--text-xl);
     line-height: var(--tw-leading, var(--text-xl--line-height));
   }
+  .font-bold {
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+  }
   .font-medium {
     --tw-font-weight: var(--font-weight-medium);
     font-weight: var(--font-weight-medium);
@@ -482,6 +493,9 @@
   }
   .break-words {
     overflow-wrap: break-word;
+  }
+  .break-all {
+    word-break: break-all;
   }
   .text-amber-200 {
     color: var(--color-amber-200);

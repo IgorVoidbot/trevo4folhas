@@ -531,6 +531,7 @@ erDiagram
         uuid request_key UK
         char request_hash
         char session_hash
+        varchar rules_version
         varchar bettor_name
         varchar bettor_phone
         numeric stake_amount
@@ -675,6 +676,7 @@ Exemplo de corpo de emissão, com chaves e enums em inglês:
   "stakeAmount": "10.00",
   "rulesAccepted": true,
   "adultDeclared": true,
+  "rulesVersion": "PREVIEW-2026-10-31-V1",
   "items": [
     {
       "selectionId": "0d22213b-95bd-4488-bb49-620fd225b132",
@@ -686,7 +688,9 @@ Exemplo de corpo de emissão, com chaves e enums em inglês:
 }
 ```
 
-Não aceitar do cliente odds definitivas, retorno, código, operador ou status. Em criação, `created_at` registra o instante do aceite; a identificação do texto aceito segue também a seção 15.4; o MVP deve manter essa versão fixa por release e identificável no artefato de implantação. Se versões diferentes de termos precisarem coexistir, adicionar `rules_version` ao bilhete antes da mudança.
+Não aceitar do cliente odds definitivas, retorno, código, operador ou status. Em criação, `created_at` registra o instante do aceite; a identificação do texto aceito segue também a seção 15.4; o MVP deve manter essa versão fixa por release e identificável no artefato de implantação. A Sprint 3 acrescenta `tickets.rules_version` pela migration V9. Novas emissões exigem a versão publicada em `/api/config`; registros anteriores ficam identificados como `LEGACY_PRE_S3`. Alterar o texto exige atualizar a versão fixa do backend e da página, rejeitando páginas antigas.
+
+O contrato implementado está em [Sprint 3](planning/sprint-3-contract.md). `GET /api/session` inicializa a sessão anônima e fornece CSRF com `no-store`; `POST /api/tickets` usa também `Idempotency-Key`. Responde `201` na criação, `200` no replay idêntico da mesma sessão, `409` em conflito, `429` com `Retry-After` no limite e erro recuperável sem exposição de SQL.
 
 Resposta contém `id`, `code`, `status`, `createdAt`, `expiresAt`, valores decimais em strings, itens com snapshots e resumo para a interface. O frontend traduz status e opções para pt-BR e formata moeda com `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`.
 
@@ -1070,7 +1074,7 @@ O backend valida a configuração real do número; a checagem acima é apenas es
 
 ### 15.4. Consistência do aceite das regras
 
-O instante created_at registra quando o servidor aceitou a emissão, não uma prova isolada da versão textual apresentada. A versão das regras deve ser fixa e rastreável por release. Se uma página antiga permanecer aberta durante uma troca de termos, rejeitar sua emissão e exigir recarga/revisão; se duas versões precisarem coexistir, implementar rules_version persistida antes dessa mudança. Não inferir o texto aceito somente pela data do registro.
+O instante created_at registra quando o servidor aceitou a emissão, não uma prova isolada da versão textual apresentada. A versão das regras deve ser fixa e rastreável por release. Se uma página antiga permanecer aberta durante uma troca de termos, rejeitar sua emissão e exigir recarga/revisão; `rules_version` é persistida desde a migration V9. Não inferir o texto aceito somente pela data do registro.
 
 ## 16. Decisões, dependências e critérios de lançamento
 

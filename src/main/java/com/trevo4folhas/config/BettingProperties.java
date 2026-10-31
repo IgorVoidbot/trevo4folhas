@@ -30,7 +30,7 @@ public class BettingProperties {
   @NotNull(message = "A aposta mínima é obrigatória.")
   @Positive(message = "A aposta mínima deve ser positiva.")
   @Digits(
-      integer = 14,
+      integer = 12,
       fraction = 2,
       message = "A aposta mínima deve ter no máximo duas casas decimais.")
   private BigDecimal minStakeAmount;
@@ -38,7 +38,7 @@ public class BettingProperties {
   @NotNull(message = "A aposta máxima é obrigatória.")
   @Positive(message = "A aposta máxima deve ser positiva.")
   @Digits(
-      integer = 14,
+      integer = 12,
       fraction = 2,
       message = "A aposta máxima deve ter no máximo duas casas decimais.")
   private BigDecimal maxStakeAmount;
@@ -51,7 +51,7 @@ public class BettingProperties {
   @NotNull(message = "O teto de retorno potencial é obrigatório.")
   @Positive(message = "O teto de retorno potencial deve ser positivo.")
   @Digits(
-      integer = 14,
+      integer = 12,
       fraction = 2,
       message = "O teto de retorno potencial deve ter no máximo duas casas decimais.")
   private BigDecimal maxPotentialReturn;

@@ -26,7 +26,8 @@ public class PublicConfigController {
         betting.getMaxPotentialReturn().toPlainString(),
         betting.getTicketValidityMinutes(),
         catalog.bankTimeZone(),
-        catalog.bankWhatsappNumber().isEmpty() ? null : catalog.bankWhatsappNumber());
+        catalog.bankWhatsappNumber().isEmpty() ? null : catalog.bankWhatsappNumber(),
+        com.trevo4folhas.ticket.TicketRules.VERSION);
   }
 
   public record PublicConfigResponse(
@@ -36,5 +37,6 @@ public class PublicConfigController {
       String maxPotentialReturn,
       int ticketValidityMinutes,
       String bankTimeZone,
-      String bankWhatsappNumber) {}
+      String bankWhatsappNumber,
+      String rulesVersion) {}
 }

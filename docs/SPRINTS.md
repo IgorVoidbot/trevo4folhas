@@ -19,7 +19,7 @@ Estados de acompanhamento: `TODO`, `IN_PROGRESS`, `REVIEW`, `BLOCKED`, `DONE`. U
 | Persistência S1.01–02 | Seis entidades, migrations V1–V8 e testes PostgreSQL 16 aprovados | Preservar migrations aplicadas ao implementar emissão/decisão |
 | Segurança S1.03 | Bootstrap, sessão, CSRF/rate limiting e testes aprovados | Manter controles e ampliar a validação para os fluxos futuros |
 | Catálogo S1.04 | APIs, edição/curadoria, UI administrativa e catálogo público implementados | Concluir homologação S1.06; não publicar dados fictícios em produção |
-| S2 e jornadas seguintes | S2 entregue com dados locais; S3–S5 sem fluxos implementados | Iniciar S3 sem apresentar S1.06 ou produção como concluídas |
+| S2 e jornadas seguintes | S2 e S3 entregues localmente; S4/S5 ainda pendentes | Implementar fila/decisão/expiração da S4, mantendo S1.06 e produção separadas |
 
 Registros anteriores em [planning/t4f-007-progress.md](planning/t4f-007-progress.md) e [planning/t4f-007-qa.md](planning/t4f-007-qa.md) são evidência histórica, não teste reexecutado hoje. Os IDs T4F-* do quadro e S* deste plano pertencem a namespaces distintos: registrar correspondência verificada, nunca supor equivalência numérica. A autorização anterior está em [planning/development-authorization.md](planning/development-authorization.md); esta edição não amplia autorizações nem inicia workers.
 
@@ -155,7 +155,7 @@ Dependências liberadas ou bloqueadas:
 
 **Objetivo:** permitir seleção e revisão acessível em desktop e celular. Dependência: Sprint 1.
 
-**Estado: DONE no incremento local (31/10/2026).** [Evidências e limitações](planning/sprint-2-validation.md). Usa ofertas manuais fictícias; S1.06 continua parcial. Emissão permanece desabilitada até a Sprint 3. Sem alteração automática do quadro externo.
+**Estado: DONE no incremento local (31/10/2026).** [Evidências e limitações](planning/sprint-2-validation.md). Usa ofertas manuais fictícias; S1.06 continua parcial. A emissão foi conectada posteriormente na Sprint 3. Sem alteração automática do quadro externo.
 
 - [x] S2.01 — Construir layout público.
   - [x] Criar template base com `lang='pt-BR'`, viewport e CSS compilado.
@@ -192,53 +192,53 @@ Dependências liberadas ou bloqueadas:
 
 ### Sprint 3 — Emissão transacional e WhatsApp
 
-**Estado: TODO.** Entidades, colunas e DTOs de leitura existem; faltam cálculo financeiro autoritativo, emissão, idempotência de serviço, integração do formulário e WhatsApp. Nenhum endpoint de emissão foi entregue.
+**Estado: DONE no incremento local (31/10/2026).** [Contrato](planning/sprint-3-contract.md) e [validação](planning/sprint-3-validation.md): 173 testes Java, quatro de cupom e navegador 360/1440 aprovados. Fluxo público grava pré-bilhetes pendentes; WhatsApp não confirma pagamento. Dispositivo físico/envio real, produção e S4/S5 permanecem separados.
 
 **Objetivo:** persistir um pré-bilhete íntegro e encaminhar seu resumo manualmente. Dependência: Sprints 1 e 2.
 
-- [ ] S3.01 — Implementar cálculo no backend.
-  - [ ] Criar `MoneyCalculator` usando `BigDecimal`.
-  - [ ] Multiplicar odds sem arredondamentos intermediários.
-  - [ ] Aplicar `HALF_UP` apenas no retorno monetário final.
-  - [ ] Validar limites de valor, itens e retorno potencial.
-  - [ ] Testar casos de meia unidade de centavo, limites e produto de dez odds.
-- [ ] S3.02 — Implementar emissão.
-  - [ ] Criar `CreateTicketRequest` e resposta sem exposição JPA.
-  - [ ] Normalizar nome/telefone e validar declarações obrigatórias.
-  - [ ] Validar IDs internos, relações, itens repetidos e versões de partida/mercado/seleção.
-  - [ ] Implementar hierarquia compartilhada de locks da §8.4.
-  - [ ] Revalidar curadoria, estado, frescor e início dentro da transação, sem chamada externa.
-  - [ ] Calcular validade pelo menor prazo e capturar snapshots.
-  - [ ] Gerar código aleatório com constraint única e retentativa limitada.
-  - [ ] Persistir bilhete/itens com rollback integral em falha.
-- [ ] S3.03 — Implementar idempotência e proteção do fluxo público.
-  - [ ] Gerar nonce de sessão e UUID de tentativa lógica no frontend.
-  - [ ] Persistir hash de sessão e hash do conteúdo normalizado.
-  - [ ] Retornar emissão existente somente se sessão e conteúdo coincidirem.
-  - [ ] Tratar colisão de chave concorrente após rollback em nova transação.
-  - [ ] Configurar limite de emissões e resposta 429 em pt-BR.
-  - [ ] Implementar `ApiExceptionHandler` com códigos em inglês e mensagens pt-BR.
-  - [ ] Adicionar `no-store` às respostas com dados pessoais e impedir body logging.
-- [ ] S3.04 — Conectar formulário e confirmação visual.
-  - [ ] Enviar CSRF, UUID de idempotência e DTO com `fetch`.
-  - [ ] Desabilitar envio durante processamento e preservar formulário em falhas.
-  - [ ] Tratar 409 atualizando revisão e exigindo nova ação do usuário.
-  - [ ] Mostrar resumo somente após confirmação da persistência pelo servidor.
-  - [ ] Exibir status pendente, prazo, código e valores devolvidos pelo servidor.
-  - [ ] Implementar copiar código e copiar resumo com fallback visível.
-- [ ] S3.05 — Implementar link WhatsApp e medição de clique.
-  - [ ] Validar número de destino da banca na configuração.
-  - [ ] Gerar mensagem a partir do bilhete persistido e codificar texto.
-  - [ ] Implementar abertura por ação explícita do usuário.
-  - [ ] Exibir número e cópia do resumo em caso de falha.
-  - [ ] Criar endpoint que verifica sessão/chave e registra primeiro clique.
-  - [ ] Garantir que falha de telemetria não bloqueie o link nem altere status.
-- [ ] S3.06 — Validar casos críticos da emissão.
-  - [ ] Testar rollback, código único, mesma partida repetida e preço adulterado no cliente.
-  - [ ] Testar duas emissões simultâneas com a mesma chave.
-  - [ ] Testar chave com outro conteúdo e tentativa de recuperação em outra sessão.
-  - [ ] Testar mudança de odds/estado concorrente e jogo iniciado.
-  - [ ] Testar acentos, quebras de linha e ausência de efeito financeiro do clique.
+- [x] S3.01 — Implementar cálculo no backend.
+  - [x] Criar `MoneyCalculator` usando `BigDecimal`.
+  - [x] Multiplicar odds sem arredondamentos intermediários.
+  - [x] Aplicar `HALF_UP` apenas no retorno monetário final.
+  - [x] Validar limites de valor, itens e retorno potencial.
+  - [x] Testar casos de meia unidade de centavo, limites e produto de dez odds.
+- [x] S3.02 — Implementar emissão.
+  - [x] Criar `CreateTicketRequest` e resposta sem exposição JPA.
+  - [x] Normalizar nome/telefone e validar declarações obrigatórias.
+  - [x] Validar IDs internos, relações, itens repetidos e versões de partida/mercado/seleção.
+  - [x] Implementar hierarquia compartilhada de locks da §8.4.
+  - [x] Revalidar curadoria, estado, frescor e início dentro da transação, sem chamada externa.
+  - [x] Calcular validade pelo menor prazo e capturar snapshots.
+  - [x] Gerar código aleatório com constraint única e retentativa limitada.
+  - [x] Persistir bilhete/itens com rollback integral em falha.
+- [x] S3.03 — Implementar idempotência e proteção do fluxo público.
+  - [x] Gerar nonce de sessão e UUID de tentativa lógica no frontend.
+  - [x] Persistir hash de sessão e hash do conteúdo normalizado.
+  - [x] Retornar emissão existente somente se sessão e conteúdo coincidirem.
+  - [x] Tratar colisão de chave concorrente após rollback em nova transação.
+  - [x] Configurar limite de emissões e resposta 429 em pt-BR.
+  - [x] Implementar `ApiExceptionHandler` com códigos em inglês e mensagens pt-BR.
+  - [x] Adicionar `no-store` às respostas com dados pessoais e impedir body logging.
+- [x] S3.04 — Conectar formulário e confirmação visual.
+  - [x] Enviar CSRF, UUID de idempotência e DTO com `fetch`.
+  - [x] Desabilitar envio durante processamento e preservar formulário em falhas.
+  - [x] Tratar 409 atualizando revisão e exigindo nova ação do usuário.
+  - [x] Mostrar resumo somente após confirmação da persistência pelo servidor.
+  - [x] Exibir status pendente, prazo, código e valores devolvidos pelo servidor.
+  - [x] Implementar copiar código e copiar resumo com fallback visível.
+- [x] S3.05 — Implementar link WhatsApp e medição de clique.
+  - [x] Validar número de destino da banca na configuração.
+  - [x] Gerar mensagem a partir do bilhete persistido e codificar texto.
+  - [x] Implementar abertura por ação explícita do usuário.
+  - [x] Exibir número e cópia do resumo em caso de falha.
+  - [x] Criar endpoint que verifica sessão/chave e registra primeiro clique.
+  - [x] Garantir que falha de telemetria não bloqueie o link nem altere status.
+- [x] S3.06 — Validar casos críticos da emissão.
+  - [x] Testar rollback, código único, mesma partida repetida e preço adulterado no cliente.
+  - [x] Testar duas emissões simultâneas com a mesma chave.
+  - [x] Testar chave com outro conteúdo e tentativa de recuperação em outra sessão.
+  - [x] Testar mudança de odds/estado concorrente e jogo iniciado.
+  - [x] Testar acentos, quebras de linha e ausência de efeito financeiro do clique.
 
 **Entrega/aceite da sprint:** fluxo público gera exatamente um pré-bilhete válido, mostra resumo fiel e abre conversa; não confirma pagamento nem bilhete.
 

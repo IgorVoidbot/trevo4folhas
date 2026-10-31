@@ -1,3 +1,4 @@
+import { TicketIssuance } from './ticket-issuance.js';
 import { Slip, decimalUnits, normalizeStake, preview } from './slip-state.js';
 
 const byId = (id) => document.getElementById(id);
@@ -10,6 +11,26 @@ let loading = false;
 let catalogEpoch = 0;
 let revalidation;
 const selectionButtons = new Map();
+const issuance = new TicketIssuance({
+  element: byId('generate-ticket'),
+  feedback: byId('review-feedback'),
+  dateText,
+  freeze: (locked) => {
+    for (const control of byId('review-form').querySelectorAll('input, button'))
+      if (control.id !== 'generate-ticket') control.disabled = locked;
+    byId('clear-slip').disabled = locked || !slip?.items.size;
+    for (const control of byId('slip-items').querySelectorAll('button'))
+      control.disabled = locked;
+    for (const [control] of selectionButtons) control.disabled = locked;
+  },
+  conflict: (errorCode) => {
+    if (errorCode === 'CATALOG_CHANGED')
+      for (const item of slip.items.values())
+        slip.markUnavailable(item.matchId);
+    invalidateReview();
+    renderSlip();
+  },
+});
 const money = (cents) =>
   cents === null
     ? '—'
@@ -31,6 +52,8 @@ function button(text, action, className = 'public-secondary') {
   return result;
 }
 function invalidateReview() {
+  if (issuance.locked) return;
+  issuance.invalidate();
   byId('review-summary').hidden = true;
   byId('review-feedback').textContent = '';
 }
@@ -151,6 +174,7 @@ function renderSlip() {
       );
     row.append(
       button('Remover', () => {
+        if (issuance.locked) return;
         slip.remove(item.matchId);
         invalidateReview();
         renderSlip();
@@ -188,6 +212,7 @@ function offerItem(match, market, selection) {
   };
 }
 function choose(item) {
+  if (issuance.locked) return;
   if (Date.parse(item.startsAt) <= Date.now()) {
     message('A partida já começou. Atualize o catálogo.');
     return;
@@ -250,6 +275,7 @@ async function selections(
           `${selection.displayName}, cotação ${oddText(selection.odds)}`,
         );
         choice.setAttribute('aria-pressed', String(isSelected(item)));
+        choice.disabled = issuance.locked;
         selectionButtons.set(choice, item);
         target.append(choice);
       }
@@ -427,12 +453,13 @@ async function allPages(path) {
   );
 }
 async function validateEntries() {
-  if (!slip?.items.size) return;
+  if (!slip?.items.size || issuance.locked) return;
   const entries = [...slip.items.values()];
   let changed = false;
   for (const previous of entries) {
     try {
       const match = await api(`/api/matches/${previous.matchId}`);
+      if (issuance.locked) return;
       const market = (await allPages(`/api/matches/${match.id}/markets`)).find(
         (row) => row.id === previous.marketId,
       );
@@ -506,7 +533,7 @@ panel.addEventListener('keydown', (event) => {
   if (event.key !== 'Tab') return;
   const focusable = [
     ...panel.querySelectorAll(
-      'button:not(:disabled), input:not(:disabled), summary, a[href]',
+      'button:not(:disabled), input:not(:disabled), textarea:not(:disabled), summary, a[href]',
     ),
   ].filter((element) => element.getClientRects().length);
   const first = focusable[0],
@@ -543,6 +570,7 @@ byId('refresh-catalog').addEventListener('click', async () => {
   await catalog();
 });
 byId('clear-slip').addEventListener('click', () => {
+  if (issuance.locked) return;
   if (window.confirm('Limpar todas as seleções do cupom?')) {
     slip.clear();
     invalidateReview();
@@ -564,7 +592,7 @@ byId('bettor-phone').addEventListener('blur', () => {
 });
 byId('review-form').addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!settings || !slip) return;
+  if (!settings || !slip || issuance.locked) return;
   const reviewButton = byId('review-slip');
   reviewButton.disabled = true;
   try {
@@ -574,7 +602,9 @@ byId('review-form').addEventListener('submit', async (event) => {
     const rawPhone = byId('bettor-phone').value.trim();
     const phone = rawPhone.replace(/[\s()+-]/g, '');
     const nameError =
-      name.length < 2 ? 'Informe seu nome, com ao menos dois caracteres.' : '';
+      name.length < 2 || name.length > 100
+        ? 'Informe seu nome, com 2 a 100 caracteres.'
+        : '';
     const phoneError = !/^(?:55)?[1-9]\d{9,10}$/.test(phone)
       ? 'Informe um telefone válido com DDD, com 10 ou 11 dígitos; o código 55 é opcional.'
       : '';
@@ -612,9 +642,11 @@ byId('review-form').addEventListener('submit', async (event) => {
       if (first) first.focus();
       return;
     }
-    // No mutation endpoint exists in Sprint 2. Keep the reviewed request only in memory.
     const draft = {
       stakeAmount: normalized,
+      rulesAccepted: true,
+      adultDeclared: true,
+      rulesVersion: settings.rulesVersion,
       bettorName: name,
       bettorPhone: phone,
       items: [...slip.items.values()].map(
@@ -642,7 +674,8 @@ byId('review-form').addEventListener('submit', async (event) => {
     );
     summary.hidden = false;
     byId('review-feedback').textContent =
-      'Revisão concluída. A emissão estará disponível em uma próxima etapa.';
+      'Revisão concluída. Clique em Gerar pré-bilhete para enviar este pedido.';
+    issuance.review(draft);
   } finally {
     reviewButton.disabled = false;
   }
@@ -651,7 +684,7 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden && settings && !loading) revalidate();
 });
 setInterval(() => {
-  if (!slip) return;
+  if (!slip || issuance.locked) return;
   let changed = false;
   for (const item of slip.items.values())
     if (!item.needsReview && Date.parse(item.startsAt) <= Date.now()) {
@@ -667,6 +700,7 @@ async function initialize() {
   try {
     settings = await api('/api/config');
     if (
+      !settings.rulesVersion ||
       !Number.isInteger(settings.maxSelections) ||
       settings.maxSelections < 1 ||
       settings.maxSelections > 10 ||

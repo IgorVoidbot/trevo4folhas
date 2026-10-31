@@ -1,0 +1,17 @@
+# Sprint 3 — contrato de implementação
+
+Escopo local autorizado: emissão e resumo para WhatsApp, sem decisão financeira. Branch `feat/sprint-3-ticket-issuance`; decisões comerciais e homologação de fornecedor permanecem separadas.
+
+- `POST /api/tickets`, CSRF e `Idempotency-Key` UUID. Corpo: `bettorName`, `bettorPhone`, `stakeAmount` string decimal, `rulesAccepted`, `adultDeclared`, `rulesVersion` e itens com `selectionId`, `matchVersion`, `marketVersion`, `selectionVersion`. Campos desconhecidos são rejeitados.
+- Nome normalizado de 2–100 caracteres, telefone brasileiro normalizado com prefixo 55; valores até 12 dígitos inteiros e duas casas, coerentes com `numeric(14,2)`.
+- `201` em criação; `200` no replay persistido idêntico da mesma sessão. Chave vinculada ao hash SHA-256 de nonce aleatório da sessão, nunca ao cookie bruto. O hash da intenção inclui conteúdo normalizado, versões e versão das regras; ordem dos itens não altera a intenção.
+- Um lock transacional de coordenação por chave idempotente precede as linhas de domínio. Depois: bilhete existente primeiro, partidas por UUID crescente, mercados por UUID crescente e seleções por UUID crescente. O replay é resolvido antes de catálogo, limites comerciais atuais ou versão atual das regras. Violações de unicidade são tratadas após rollback em nova transação, com tentativas limitadas para código aleatório.
+- Timestamps externos de preço são comparados/persistidos em microssegundos, a precisão do PostgreSQL 16; repetir o mesmo instante submicrossegundo não renova nem troca a odd. Timestamp originalmente futuro continua inválido.
+- Emissão consulta exclusivamente PostgreSQL, com regras de elegibilidade compartilhadas com o catálogo. Ticket e snapshots são atômicos; preço do navegador não é aceito. Prazo é o menor entre `createdAt` do banco + validade e o início mais próximo. O relógio é reavaliado após locks. Auditoria permanece gerenciada pelo banco.
+- Migration V9 acrescenta `tickets.rules_version`, preservando registros anteriores como `LEGACY_PRE_S3`. Novas emissões registram versão fixa identificável por release; página com regras antigas exige nova revisão, sem aceitar termos alterados silenciosamente.
+- Resposta privada `no-store`: identificação, código, status, datas, valores string, snapshots completos, resumo e número público de contato. Sem hashes, nonce ou dados administrativos. Não existe consulta pública por código/telefone.
+- `POST /api/tickets/whatsapp-click`, corpo com `requestKey`, CSRF e sessão emissora: registra o primeiro clique; nunca muda estado financeiro. Link WhatsApp pelo gesto explícito; mensagem longa usa resumo curto e mantém cópia completa.
+- Limites de abuso configuráveis por IP e sessão, referência DEV de 10 solicitações/minuto, confiando apenas no endereço remoto. CSRF permanece ativo. Erros técnicos em inglês e mensagens pt-BR.
+- Frontend preserva chave/corpo em resultado desconhecido, desabilita duplicação, exige revisão em mudança de catálogo e oferece cópias e contato visível. Nenhuma PII em storage ou URLs internas. WhatsApp usa exclusivamente dados persistidos.
+
+Fontes técnicas verificadas: [locks transacionais PostgreSQL 16](https://www.postgresql.org/docs/16/functions-admin.html), [lock_timeout PostgreSQL 16](https://www.postgresql.org/docs/16/runtime-config-client.html) e [transações independentes Spring](https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/tx-propagation.html). Não há chamada ao fornecedor nem confirmação de Pix nesta implementação.

@@ -28,6 +28,13 @@ import jakarta.persistence.Version;
 @Entity
 @Table(name = "tickets")
 public class Ticket extends BaseEntity {
+  @Column(
+      name = "rules_version",
+      nullable = false,
+      length = 64,
+      insertable = false,
+      updatable = false)
+  private String rulesVersion;
 
   /** Ticket code; the physical column is {@code ticket_code}. */
   @Column(name = "ticket_code", nullable = false, length = 32)

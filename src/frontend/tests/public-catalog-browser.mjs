@@ -88,14 +88,14 @@ try {
       await page
         .getByRole('button', { name: 'Gerar pré-bilhete', exact: true })
         .isDisabled(),
-      true,
+      false,
     );
     if (width === 360) {
       await page.locator('#review-slip').focus();
       await page.keyboard.press('Tab');
       assert.equal(
         await page.locator(':focus').getAttribute('id'),
-        'close-slip',
+        'generate-ticket',
       );
       await page.keyboard.press('Escape');
       assert.equal(
@@ -266,6 +266,7 @@ try {
     maxPotentialReturn: '10000.00',
     maxSelections: 10,
     bankTimeZone: 'America/Sao_Paulo',
+    rulesVersion: 'PREVIEW-2026-10-31-V1',
   };
   let version = 1,
     failure = 0,

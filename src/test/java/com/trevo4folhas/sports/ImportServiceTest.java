@@ -117,6 +117,29 @@ class ImportServiceTest {
   }
 
   @Test
+  void subMicrosecondReplayCannotRenewOrChangeThePersistedPrice() throws Exception {
+    importer.fixture(fixture());
+    Offer original = offer();
+    Instant precision =
+        Instant.now()
+            .minusSeconds(60)
+            .truncatedTo(java.time.temporal.ChronoUnit.MICROS)
+            .plusNanos(999);
+    Offer first = change(original, original.bookmakerId(), original.odds(), precision);
+    assertThat(importer.offer(first)).isTrue();
+    var before =
+        jdbc.queryForMap("SELECT version,provider_updated_at FROM public.market_selections");
+    assertThat(importer.offer(first)).isTrue();
+    assertThat(jdbc.queryForMap("SELECT version,provider_updated_at FROM public.market_selections"))
+        .isEqualTo(before);
+    assertThat(
+            importer.offer(change(first, first.bookmakerId(), new BigDecimal("2.00"), precision)))
+        .isFalse();
+    assertThat(jdbc.queryForObject("SELECT odds FROM public.market_selections", BigDecimal.class))
+        .isEqualByComparingTo(first.odds());
+  }
+
+  @Test
   void futureSyncEvidenceFailsClosedAtEveryLevel() throws Exception {
     importer.fixture(fixture());
     importer.offer(offer());

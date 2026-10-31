@@ -76,6 +76,7 @@ public class SecurityConfig {
                     "/error",
                     "/admin/login",
                     "/api/config",
+                    "/api/session",
                     "/api/matches/**",
                     "/api/markets/*/selections",
                     "/css/**",
