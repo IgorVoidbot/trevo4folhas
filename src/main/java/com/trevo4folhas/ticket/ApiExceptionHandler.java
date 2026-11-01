@@ -37,8 +37,7 @@ public class ApiExceptionHandler {
   })
   ResponseEntity<Error> invalid(Exception failure) {
     return ticket(
-        TicketException.invalid(
-            "Confira a identificação, o valor, as declarações e os palpites informados."));
+        TicketException.invalid("Confira os campos, as declarações e as versões informadas."));
   }
 
   @ExceptionHandler({PessimisticLockingFailureException.class, TransactionTimedOutException.class})
@@ -52,6 +51,11 @@ public class ApiExceptionHandler {
 
   @ExceptionHandler(DataAccessException.class)
   ResponseEntity<Error> storage(Exception failure) {
+    for (Throwable cause = failure; cause != null; cause = cause.getCause())
+      if (cause instanceof java.sql.SQLException sql
+          && sql.getSQLState() != null
+          && java.util.Set.of("55P03", "40P01", "40001", "57014").contains(sql.getSQLState()))
+        return busy(failure);
     return ticket(
         new TicketException(
             HttpStatus.SERVICE_UNAVAILABLE,

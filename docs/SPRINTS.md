@@ -19,7 +19,7 @@ Estados de acompanhamento: `TODO`, `IN_PROGRESS`, `REVIEW`, `BLOCKED`, `DONE`. U
 | Persistência S1.01–02 | Seis entidades, migrations V1–V8 e testes PostgreSQL 16 aprovados | Preservar migrations aplicadas ao implementar emissão/decisão |
 | Segurança S1.03 | Bootstrap, sessão, CSRF/rate limiting e testes aprovados | Manter controles e ampliar a validação para os fluxos futuros |
 | Catálogo S1.04 | APIs, edição/curadoria, UI administrativa e catálogo público implementados | Concluir homologação S1.06; não publicar dados fictícios em produção |
-| S2 e jornadas seguintes | S2 e S3 entregues localmente; S4/S5 ainda pendentes | Implementar fila/decisão/expiração da S4, mantendo S1.06 e produção separadas |
+| S2 e jornadas seguintes | S2, S3 e S4 entregues localmente; S5 ainda pendente | Implementar indicadores e validação/preparação operacional, mantendo S1.06 e produção separadas |
 
 Registros anteriores em [planning/t4f-007-progress.md](planning/t4f-007-progress.md) e [planning/t4f-007-qa.md](planning/t4f-007-qa.md) são evidência histórica, não teste reexecutado hoje. Os IDs T4F-* do quadro e S* deste plano pertencem a namespaces distintos: registrar correspondência verificada, nunca supor equivalência numérica. A autorização anterior está em [planning/development-authorization.md](planning/development-authorization.md); esta edição não amplia autorizações nem inicia workers.
 
@@ -244,48 +244,48 @@ Dependências liberadas ou bloqueadas:
 
 ### Sprint 4 — Fila, confirmação manual e expiração
 
-**Estado: TODO.** Existem enums, colunas e repositories, mas não há fila, comandos de decisão, job de expiração ou jornadas/testes operacionais completos.
+**Estado: DONE no incremento local (31/10/2026).** [Contrato](planning/sprint-4-contract.md) e [validação](planning/sprint-4-validation.md): 201 testes Java, quatro de cupom, operação Chrome 360/1440 e reinício real do app aprovados. Sem liberação de produção/piloto ou conclusão de S0.01/S1.06/S5.
 
 **Objetivo:** permitir operação completa pelo cambista e fechar o ciclo de estados. Dependência: Sprint 3.
 
-- [ ] S4.01 — Implementar consulta administrativa.
-  - [ ] Criar listagem paginada por criação decrescente.
-  - [ ] Criar busca exata por código com normalização de caixa/espaços.
-  - [ ] Criar filtros por status e período com timezone correto.
-  - [ ] Criar detalhe com snapshots, telefone, prazo e valores.
-  - [ ] Mostrar operador/horário e motivos de decisões anteriores.
-  - [ ] Destacar jogos cancelados em bilhetes confirmados.
-- [ ] S4.02 — Implementar confirmação.
-  - [ ] Criar comando específico com versão esperada e declaração de Pix conferido.
-  - [ ] Bloquear bilhete e validar status/prazo na transação.
-  - [ ] Bloquear partidas/mercados/seleções na hierarquia comum e validar curadoria/estado/frescor/início, sem HTTP externo.
-  - [ ] Manter odds do snapshot, sem usar cotação atual para recalcular.
-  - [ ] Registrar operador autenticado, horário e status `CONFIRMED`.
-  - [ ] Criar diálogo de confirmação e feedback pt-BR.
-- [ ] S4.03 — Implementar cancelamento.
-  - [ ] Criar comando específico para pendentes.
-  - [ ] Validar motivo e limitar observação operacional.
-  - [ ] Registrar operador, horário e status `CANCELLED`.
-  - [ ] Bloquear cancelamento de confirmados/cancelados/expirados.
-  - [ ] Mostrar orientação de tratamento manual para pagamento após vencimento.
-- [ ] S4.04 — Implementar expiração.
-  - [ ] Criar job de atualização condicional a cada minuto.
-  - [ ] Atualizar versão e timestamps nas alterações em lote.
-  - [ ] Tratar bilhetes vencidos como expirados nas consultas e comandos antes do job.
-  - [ ] Recuperar pendências vencidas após reinício sem alterar bilhetes decididos.
-  - [ ] Garantir que as contagens usem status efetivo quando o job estiver atrasado.
-- [ ] S4.05 — Implementar auditoria e conflitos.
-  - [ ] Emitir eventos estruturados em inglês sem dados pessoais.
-  - [ ] Retornar conflito e estado atual ao segundo operador.
-  - [ ] Configurar timeout de lock e mensagem recuperável.
-  - [ ] Evitar transações abertas durante etapas humanas de atendimento.
-- [ ] S4.06 — Testar o ciclo operacional.
-  - [ ] Testar confirmação com Pix declarado e recusa sem declaração.
-  - [ ] Testar confirmação no limite exato de expiração e antes/depois do início.
-  - [ ] Testar confirmação versus cancelamento e confirmação versus expiração concorrentes.
-  - [ ] Testar edição/importação versus emissão e suspensão/curadoria/sync versus confirmação, incluindo timestamp regressivo, reenvio e ausência parcial.
-  - [ ] Testar cancelamento de jogo com pendentes e confirmados vinculados.
-  - [ ] Testar relógio injetável e recuperação após reinício.
+- [x] S4.01 — Implementar consulta administrativa.
+  - [x] Criar listagem paginada por criação decrescente.
+  - [x] Criar busca exata por código com normalização de caixa/espaços.
+  - [x] Criar filtros por status e período com timezone correto.
+  - [x] Criar detalhe com snapshots, telefone, prazo e valores.
+  - [x] Mostrar operador/horário e motivos de decisões anteriores.
+  - [x] Destacar jogos cancelados em bilhetes confirmados.
+- [x] S4.02 — Implementar confirmação.
+  - [x] Criar comando específico com versão esperada e declaração de Pix conferido.
+  - [x] Bloquear bilhete e validar status/prazo na transação.
+  - [x] Bloquear partidas/mercados/seleções na hierarquia comum e validar curadoria/estado/frescor/início, sem HTTP externo.
+  - [x] Manter odds do snapshot, sem usar cotação atual para recalcular.
+  - [x] Registrar operador autenticado, horário e status `CONFIRMED`.
+  - [x] Criar diálogo de confirmação e feedback pt-BR.
+- [x] S4.03 — Implementar cancelamento.
+  - [x] Criar comando específico para pendentes.
+  - [x] Validar motivo e limitar observação operacional.
+  - [x] Registrar operador, horário e status `CANCELLED`.
+  - [x] Bloquear cancelamento de confirmados/cancelados/expirados.
+  - [x] Mostrar orientação de tratamento manual para pagamento após vencimento.
+- [x] S4.04 — Implementar expiração.
+  - [x] Criar job de atualização condicional a cada minuto.
+  - [x] Atualizar versão e timestamps nas alterações em lote.
+  - [x] Tratar bilhetes vencidos como expirados nas consultas e comandos antes do job.
+  - [x] Recuperar pendências vencidas após reinício sem alterar bilhetes decididos.
+  - [x] Garantir que as contagens usem status efetivo quando o job estiver atrasado.
+- [x] S4.05 — Implementar auditoria e conflitos.
+  - [x] Emitir eventos estruturados em inglês sem dados pessoais.
+  - [x] Retornar conflito e estado atual ao segundo operador.
+  - [x] Configurar timeout de lock e mensagem recuperável.
+  - [x] Evitar transações abertas durante etapas humanas de atendimento.
+- [x] S4.06 — Testar o ciclo operacional.
+  - [x] Testar confirmação com Pix declarado e recusa sem declaração.
+  - [x] Testar confirmação no limite exato de expiração e antes/depois do início.
+  - [x] Testar confirmação versus cancelamento e confirmação versus expiração concorrentes.
+  - [x] Testar edição/importação versus emissão e suspensão/curadoria/sync versus confirmação, incluindo timestamp regressivo, reenvio e ausência parcial.
+  - [x] Testar cancelamento de jogo com pendentes e confirmados vinculados.
+  - [x] Testar relógio injetável e recuperação após reinício.
 
 **Entrega/aceite da sprint:** cambista localiza, confere e decide um bilhete; decisões e expirações são consistentes, sem reversão ou confirmação forçada.
 

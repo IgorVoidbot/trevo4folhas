@@ -25,6 +25,11 @@ public class AdminHomeController {
     return "admin/matches";
   }
 
+  @GetMapping("/admin/tickets")
+  public String tickets() {
+    return "admin/tickets";
+  }
+
   @GetMapping("/admin")
   public String home(@AuthenticationPrincipal AdminUserDetails principal, Model model) {
     model.addAttribute("displayName", principal == null ? "" : principal.getDisplayName());

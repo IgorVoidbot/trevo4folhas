@@ -1,0 +1,143 @@
+<!doctype html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout('Pré-bilhetes', ~{::content})}"
+>
+  <div th:fragment="content" class="space-y-5">
+    <nav class="flex flex-wrap gap-4">
+      <a href="/admin" class="py-3 text-emerald-300 underline">Administração</a
+      ><a href="/admin/matches" class="py-3 text-emerald-300 underline"
+        >Catálogo</a
+      >
+      <form th:action="@{/admin/logout}" method="post">
+        <button class="public-secondary" type="submit">Sair</button>
+      </form>
+    </nav>
+    <h1 class="text-2xl font-semibold">Pré-bilhetes</h1>
+    <p class="text-slate-300">
+      Confira o Pix no banco antes de confirmar. O sistema registra sua decisão;
+      não verifica transferências automaticamente.
+    </p>
+    <p id="ticket-zone" class="text-sm text-slate-400"></p>
+    <form
+      id="ticket-filters"
+      class="public-surface grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <label
+        >Código exato<input
+          name="code"
+          class="catalog-input"
+          maxlength="32"
+          placeholder="TF-…"
+          autocomplete="off"
+      /></label>
+      <label
+        >Situação<select name="status" class="catalog-input">
+          <option value="">Todas</option>
+          <option value="PENDING">Pendentes</option>
+          <option value="CONFIRMED">Confirmados</option>
+          <option value="CANCELLED">Cancelados</option>
+          <option value="EXPIRED">Expirados</option>
+        </select></label
+      >
+      <label
+        >Emitidos desde<input name="from" type="date" class="catalog-input"
+      /></label>
+      <label
+        >Emitidos até<input name="to" type="date" class="catalog-input"
+      /></label>
+      <button id="apply-ticket-filters" class="public-primary" type="submit">
+        Filtrar pré-bilhetes
+      </button>
+      <button id="refresh-tickets" class="public-secondary" type="button">
+        Atualizar fila
+      </button>
+    </form>
+    <p
+      id="ticket-feedback"
+      role="status"
+      aria-live="polite"
+      class="text-amber-200"
+    ></p>
+    <p id="ticket-counts" class="text-sm text-slate-300"></p>
+    <div class="grid min-w-0 gap-5 lg:grid-cols-2">
+      <section aria-label="Fila de pré-bilhetes" class="min-w-0">
+        <div id="ticket-list" class="space-y-3" aria-busy="true">
+          <p>Carregando pré-bilhetes…</p>
+        </div>
+        <nav
+          class="my-4 flex flex-wrap items-center gap-3"
+          aria-label="Páginas de pré-bilhetes"
+        >
+          <button
+            id="ticket-previous"
+            type="button"
+            class="public-secondary"
+            disabled
+          >
+            Anterior</button
+          ><span id="ticket-page"></span
+          ><button
+            id="ticket-next"
+            type="button"
+            class="public-secondary"
+            disabled
+          >
+            Próxima
+          </button>
+        </nav>
+      </section>
+      <section
+        id="ticket-detail"
+        class="public-surface min-w-0 space-y-4"
+        aria-label="Detalhe do pré-bilhete"
+        tabindex="-1"
+      >
+        <p>Selecione um pré-bilhete para conferir os dados.</p>
+      </section>
+    </div>
+    <dialog
+      id="decision-dialog"
+      class="m-auto max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-5 text-slate-100 backdrop:bg-slate-950/80"
+      aria-labelledby="decision-title"
+    >
+      <form id="decision-form" class="space-y-4">
+        <h2 id="decision-title" class="text-xl font-semibold"></h2>
+        <p id="decision-context" class="break-words"></p>
+        <label id="pix-field" class="flex min-h-11 items-center gap-3"
+          ><input id="pix-checked" type="checkbox" />Conferi no banco o
+          recebimento integral do Pix deste pré-bilhete.</label
+        >
+        <label id="reason-field" class="block"
+          >Motivo do cancelamento<textarea
+            id="cancel-reason"
+            class="catalog-input"
+            maxlength="250"
+          ></textarea>
+        </label>
+        <label class="block"
+          >Observação operacional (opcional)<textarea
+            id="operator-note"
+            class="catalog-input"
+            maxlength="500"
+          ></textarea>
+        </label>
+        <p
+          id="decision-feedback"
+          class="text-amber-200"
+          role="status"
+          aria-live="polite"
+        ></p>
+        <div class="flex flex-wrap gap-3">
+          <button id="save-decision" class="public-primary" type="submit">
+            Registrar decisão</button
+          ><button id="close-decision" class="public-secondary" type="button">
+            Voltar sem decidir
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" th:src="@{/js/admin-tickets.js}"></script>
+  </div>
+</html>
