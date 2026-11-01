@@ -1,0 +1,78 @@
+<!doctype html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout('Indicadores operacionais', ~{::content})}"
+>
+  <div th:fragment="content" class="space-y-5">
+    <nav class="flex flex-wrap gap-4">
+      <a href="/admin" class="py-3 text-emerald-300 underline">Administração</a
+      ><a href="/admin/tickets" class="py-3 text-emerald-300 underline"
+        >Pré-bilhetes</a
+      >
+    </nav>
+    <h1 class="text-2xl font-semibold">Indicadores operacionais</h1>
+    <p class="text-slate-300">
+      Volume declarado conferido pelos operadores. Não representa lucro, saldo
+      bancário ou conciliação automática do Pix.
+    </p>
+    <form id="metrics-filters" class="public-surface grid gap-4 sm:grid-cols-3">
+      <label
+        >Data inicial<input
+          name="from"
+          type="date"
+          class="catalog-input" /></label
+      ><label
+        >Data final<input name="to" type="date" class="catalog-input" /></label
+      ><button id="load-metrics" class="public-primary" type="submit">
+        Atualizar indicadores
+      </button>
+    </form>
+    <p
+      id="metrics-feedback"
+      role="status"
+      aria-live="polite"
+      class="text-amber-200"
+    ></p>
+    <p id="metrics-zone" class="text-sm text-slate-400"></p>
+    <section class="public-surface space-y-4" aria-labelledby="cohort-title">
+      <h2 id="cohort-title" class="text-xl font-semibold">
+        Emitidos no período
+      </h2>
+      <p>
+        Coorte pela data de emissão. Cada bilhete aparece em uma única situação.
+      </p>
+      <dl
+        id="cohort-values"
+        class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      ></dl>
+      <p id="cohort-state" class="text-amber-200"></p>
+      <dl id="conversion-values" class="grid gap-4 sm:grid-cols-3"></dl>
+      <p class="text-sm text-slate-400">
+        O clique observado pode ser subcontado. Não comprova envio de mensagem,
+        pagamento ou confirmação. Conversões só são apresentadas após encerrar a
+        validade de toda a coorte.
+      </p>
+    </section>
+    <section class="public-surface space-y-4" aria-labelledby="confirmed-title">
+      <h2 id="confirmed-title" class="text-xl font-semibold">
+        Confirmados no período
+      </h2>
+      <p>
+        Considera o horário da confirmação, inclusive bilhetes emitidos em outro
+        dia.
+      </p>
+      <dl
+        id="confirmed-values"
+        class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      ></dl>
+      <p>
+        Retornos potenciais dos bilhetes selecionados não são lucro, obrigação
+        vencida ou medida agregada de risco.
+      </p>
+      <p id="timing-sample" class="text-sm text-slate-400"></p>
+      <p id="metrics-warning" class="text-amber-200"></p>
+    </section>
+    <script type="module" th:src="@{/js/admin-metrics.js}"></script>
+  </div>
+</html>

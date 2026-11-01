@@ -19,6 +19,8 @@
 # require daemon-in-daemon support. Tests are executed and reported outside
 # the image build (see the task card); nothing is silently omitted.
 
+# Fixed technical packaging epoch; not a business/acceptance timestamp.
+ARG SOURCE_DATE_EPOCH=1767225600
 ARG NODE_IMAGE=docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
 ARG JDK_IMAGE=docker.io/library/eclipse-temurin:17-jdk-alpine@sha256:5a7fe9fcd65085bbf218a4060f08f1346b8bfd13d9f9942e2db6719cc8a11e22
 ARG JRE_IMAGE=docker.io/library/eclipse-temurin:17-jre-alpine@sha256:c4a33e6ddb738fe4be0a28a613ea0940cec42d25d7263c3e2238c43354cb19b0

@@ -256,8 +256,9 @@ class TicketOperationsTest {
         new TicketOperationsRequests.Cancel(1L, "Motivo", "x".repeat(501)),
         400);
     jdbc.update("UPDATE public.admins SET active=false WHERE id=?", actor);
-    command(t.id(), "confirm", operator, confirm(1), 403);
-    mvc.perform(get("/api/admin/tickets").with(user(operator))).andExpect(status().isForbidden());
+    command(t.id(), "confirm", operator, confirm(1), 401);
+    mvc.perform(get("/api/admin/tickets").with(user(operator)))
+        .andExpect(status().isUnauthorized());
     assertThat(jdbc.queryForObject("SELECT status FROM public.tickets", String.class))
         .isEqualTo("PENDING");
   }

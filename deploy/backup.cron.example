@@ -1,0 +1,4 @@
+# Install only after an operator reviews host paths, container name and encrypted backup storage.
+# Credentials are inherited by the authorized operator/container; never place passwords here.
+# Daily at 03:15 UTC, retain seven days. Copy to encrypted off-host storage separately.
+15 3 * * * /usr/bin/python3 /opt/trevo/deploy/database-maintenance.py --container YOUR_DB_CONTAINER --user YOUR_BACKUP_ROLE --database YOUR_DATABASE backup --directory /var/backups/trevo --prune

@@ -27,3 +27,8 @@ backups
 *.dump
 *.log
 .idea
+
+# Local agent/cloud environments do not belong to the application or build context.
+.agents/
+.codex/
+.aws/

@@ -291,49 +291,50 @@ Dependências liberadas ou bloqueadas:
 
 ### Sprint 5 — Indicadores, validação e operação piloto
 
-**Estado: TODO.** Dockerfile e controles de segurança de base já existem; faltam métricas, auditoria de segurança final, fluxo completo, carga, implantação, restauração e piloto.
+**Estado: IN_PROGRESS — incremento técnico local de 01/11/2026.** [Contrato](planning/sprint-5-contract.md), [validação e medições](planning/sprint-5-validation.md) e [runbook](planning/operations-runbook.md). Indicadores, instrumentação, revisão de acesso, empacotamento e ensaios de recuperação entregues; p95 acima de 200 ms, cenário móvel formal, aparelhos reais, hospedagem e piloto continuam abertos. Sem conclusão automática de S0.01/S1.06/US-12.
 
 **Objetivo:** tornar o MVP mensurável e operável, com validação do fluxo completo. Dependência: Sprint 4.
 
-- [ ] S5.01 — Implementar indicadores básicos.
-  - [ ] Agregar contagens por status efetivo e período de emissão.
-  - [ ] Calcular volume confirmado por horário de confirmação.
-  - [ ] Calcular conversão emissão/clique/confirmação por coorte encerrada.
-  - [ ] Calcular mediana/p90 de tempo até confirmação.
-  - [ ] Exibir rótulos que distingam clique, confirmação, volume e retorno potencial.
-  - [ ] Instrumentar duração/erros com Micrometer sem tags pessoais.
+- [x] S5.01 — Implementar indicadores básicos.
+  - [x] Agregar contagens por status efetivo e período de emissão.
+  - [x] Calcular volume confirmado por horário de confirmação.
+  - [x] Calcular conversão emissão/clique/confirmação por coorte encerrada.
+  - [x] Calcular mediana/p90 de tempo até confirmação.
+  - [x] Exibir rótulos que distingam clique, confirmação, volume e retorno potencial.
+  - [x] Instrumentar duração/erros com Micrometer sem tags pessoais.
 - [ ] S5.02 — Concluir privacidade e segurança.
-  - [ ] Revisar acesso a todas as rotas e respostas administrativas.
-  - [ ] Revisar mensagens de validação/login para garantir pt-BR.
-  - [ ] Verificar escape de nomes/notas contra XSS e ausência de `innerHTML` com dados não confiáveis.
-  - [ ] Configurar HTTPS, CSP, cookies e headers de privacidade.
-  - [ ] Revisar logs e impedir credenciais, PII e corpos sensíveis.
-  - [ ] Documentar desativação/troca de senha de operadores.
-  - [ ] Documentar e ensaiar procedimento de anonimização e rotação de backups.
+  - [x] Revisar acesso a todas as rotas e respostas administrativas.
+  - [x] Revisar mensagens de validação/login para garantir pt-BR.
+  - [x] Verificar escape de nomes/notas contra XSS e ausência de `innerHTML` com dados não confiáveis.
+  - [ ] Configurar HTTPS, CSP, cookies e headers de privacidade. Aplicação verificada; HTTPS/domínio da hospedagem ainda pendentes.
+  - [x] Revisar logs e impedir credenciais, PII e corpos sensíveis.
+  - [x] Documentar desativação/troca de senha de operadores.
+  - [x] Documentar e ensaiar procedimento de anonimização e rotação de backups.
 - [ ] S5.03 — Executar validação funcional e de qualidade.
-  - [ ] Executar testes de serviço e integração com PostgreSQL real via Testcontainers.
-  - [ ] Atingir cobertura de domínio/serviços e validar todos os cenários críticos.
-  - [ ] Executar os checks de Java, JS e formatação definidos no projeto.
-  - [ ] Verificar fluxo completo público → WhatsApp → admin usando dados de teste.
+  - [x] Executar testes de serviço e integração com PostgreSQL real via Testcontainers.
+  - [x] Atingir cobertura de domínio/serviços e validar todos os cenários críticos. Gate local: ≥80% de linhas por classe de serviço e regras selecionadas, conforme relatório.
+  - [x] Executar os checks de Java, JS e formatação definidos no projeto.
+  - [x] Verificar fluxo completo público → WhatsApp → admin usando dados de teste.
   - [ ] Verificar Android/iOS e WhatsApp Web com fallback de cópia.
-  - [ ] Verificar teclado, contraste, labels, foco e mensagens de erro.
-  - [ ] Executar carga inicial de 50 usuários simultâneos e registrar p95.
-  - [ ] Medir LCP no cenário móvel definido e corrigir gargalos identificados.
+  - [x] Verificar teclado, contraste, labels, foco e mensagens de erro.
+  - [x] Executar carga inicial de 50 usuários simultâneos e registrar p95.
+  - [ ] Atender RNF-04 (p95 <200 ms): medições acima do alvo, pendência explícita de desempenho.
+  - [ ] Medir LCP no cenário móvel definido e corrigir gargalos identificados. Experimento local p75 656 ms; cenário acordado/aparelhos reais pendentes.
 - [ ] S5.04 — Preparar implantação simples.
-  - [ ] Gerar CSS minificado e JAR/imagem reproduzível.
+  - [x] Gerar CSS minificado e JAR/imagem reproduzível. Igualdade verificada localmente sob host/toolchain controlados; não certificada entre hosts.
   - [ ] Executar migrations em homologação e documentar compatibilidade de rollback.
   - [ ] Configurar segredos da hospedagem fora do repositório.
-  - [ ] Expor health público mínimo, sem detalhes do banco ou métricas privadas.
+  - [x] Expor health público mínimo, sem detalhes do banco ou métricas privadas.
   - [ ] Agendar backup diário e testar restauração em banco isolado.
   - [ ] Documentar reinício, recuperação, RPO/RTO e contatos operacionais.
-  - [ ] Validar criação inicial de operador sem credenciais padrão.
+  - [x] Validar criação inicial de operador sem credenciais padrão.
 - [ ] S5.05 — Conduzir piloto e consolidar pendências.
   - [ ] Antes de operação real, cumprir US-12: homologar cobertura/regras/fonte/licença e thresholds, obter proposta e decisão do cliente sobre fornecedor de produção.
   - [ ] Realizar teste de emissão com pelo menos dez participantes.
   - [ ] Treinar cambista em Pix manual, expiração e cancelamento de partidas.
   - [ ] Acompanhar duas semanas de piloto com metas tratadas como hipóteses.
-  - [ ] Registrar problemas, prioridades e ajustes de parâmetros baseados em evidência.
-  - [ ] Atualizar README, documentação de operação e este PRD se houver mudanças de regra.
+  - [x] Registrar problemas, prioridades e ajustes de parâmetros baseados em evidência. Pendências técnicas registradas; ainda não há resultados de piloto humano.
+  - [x] Atualizar README, documentação de operação e este PRD se houver mudanças de regra.
 
 **Entrega/aceite da sprint:** aplicação tecnicamente pronta para piloto com checks concluídos, restauração demonstrada, indicadores disponíveis e fluxo documentado. Piloto com dinheiro/operação real fica condicionado ao gate US-12 e aos demais requisitos aplicáveis; sem isso, somente testes de desenvolvimento rotulados. As duas semanas de acompanhamento ocorrem após a preparação técnica e não estão incluídas na duração sugerida.
 

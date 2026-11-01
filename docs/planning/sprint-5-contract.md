@@ -1,0 +1,12 @@
+# Sprint 5 — contrato do incremento técnico
+
+Branch `feat/sprint-5-metrics-readiness`, baseada na main `c656cc4` com Sprint 4 integrada. Escopo autorizado: indicadores, instrumentação, segurança e preparação operacional testável localmente. Nenhuma publicação externa, contratação, uso de dinheiro real ou aprovação de gates comerciais é inferida.
+
+- `GET /admin/metrics` e `GET /api/admin/metrics?from=YYYY-MM-DD&to=YYYY-MM-DD`: somente operador ativo; datas inclusivas da banca, padrão dia atual. Resposta privada `no-store`, sem dados individuais.
+- Grupo `cohort` usa `created_at` UTC e estados efetivos mutuamente exclusivos. Coorte encerrada somente quando o maior expires_at já passou; conversões emissão→clique/confirmação/expiração ficam nulas quando aberta ou sem base. Cliques são observações, não mensagens nem Pix. Grupo `confirmed` usa handled_at, status CONFIRMED e inclui volume, média, retornos potenciais, mediana/p90 e amostra. Média nula sem confirmados; volume zero. Cancelamento de jogo mantém valores históricos e incrementa somente alerta derivado. Não há lucro/saldo/risco agregado inferido.
+- Micrometer registra tentativas/duração/erros por operação e resultado limitados, sem código, UUID, nome, telefone, usuário, parâmetros ou URI bruta como tags. Health público mínimo; métricas técnicas privadas e demais endpoints de gestão fechados.
+- Ensaios de carga usam app e PostgreSQL 16 descartáveis, base fictícia de 100 partidas/10.000 bilhetes, 50 usuários, JVM aquecida e resultados HTTP incluindo banco. Não usam a API-Football, credenciais ou dados locais. Medição móvel será experimental e rotulada se o cenário ainda não foi acordado; não representa Android/iOS físicos.
+- Scripts operacionais exigem ambiente/credenciais externos, backup privado, restauração em destino vazio isolado e anonimização somente de UUIDs aprovados e registros antigos decididos, preservando dados financeiros/snapshots e respeitando exceções de retenção. Ensaios usam somente dados fictícios. Preparar agendamento/HTTPS não significa executar em hospedagem.
+- S0.01, S1.06, US-12, política definitiva de retenção, hospedagem/segredos, testes físicos, dez participantes, treinamento e duas semanas de piloto permanecem explicitamente pendentes quando não houver evidência real.
+
+Resultados, limites e checklists serão reconciliados após execução. A Sprint 5 completa não será declarada concluída por entregar somente o código.

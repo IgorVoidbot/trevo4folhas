@@ -14,7 +14,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import jakarta.validation.ConstraintViolationException;
 
 /** Fixed messages only: never echo bodies, SQL, rejected values, hashes or stack traces. */
-@RestControllerAdvice(basePackageClasses = TicketController.class)
+@RestControllerAdvice(basePackages = {"com.trevo4folhas.ticket", "com.trevo4folhas.metrics"})
 public class ApiExceptionHandler {
   record Error(String errorCode, String message) {}
 

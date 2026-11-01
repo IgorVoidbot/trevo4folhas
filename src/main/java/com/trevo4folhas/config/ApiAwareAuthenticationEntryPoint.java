@@ -24,7 +24,8 @@ public class ApiAwareAuthenticationEntryPoint implements AuthenticationEntryPoin
       HttpServletResponse response,
       AuthenticationException authException)
       throws IOException {
-    if (request.getRequestURI().startsWith(API_PREFIX)) {
+    if ((request.getRequestURI().startsWith(API_PREFIX)
+        || request.getRequestURI().startsWith("/actuator/"))) {
       ApiErrorResponder.writeJson(
           response,
           HttpServletResponse.SC_UNAUTHORIZED,

@@ -54,7 +54,8 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       DaoAuthenticationProvider authenticationProvider,
-      AdminLoginRateLimiter adminLoginRateLimiter)
+      AdminLoginRateLimiter adminLoginRateLimiter,
+      com.trevo4folhas.admin.AdminRepository adminRepository)
       throws Exception {
     ApiAwareAuthenticationEntryPoint authenticationEntryPoint =
         new ApiAwareAuthenticationEntryPoint();
@@ -76,6 +77,7 @@ public class SecurityConfig {
                     "/error",
                     "/admin/login",
                     "/api/config",
+                    "/actuator/health",
                     "/api/session",
                     "/api/matches/**",
                     "/api/markets/*/selections",
@@ -85,7 +87,8 @@ public class SecurityConfig {
                 .permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/login", "/api/tickets", "/api/tickets/**")
                 .permitAll()
-                .requestMatchers("/admin/**", "/api/admin/**")
+                .requestMatchers(
+                    "/admin/**", "/api/admin/**", "/actuator/metrics", "/actuator/metrics/**")
                 .hasRole("ADMIN")
                 .anyRequest()
                 .denyAll());
@@ -121,6 +124,10 @@ public class SecurityConfig {
     http.addFilterBefore(
         new AdminLoginRateLimitFilter(adminLoginRateLimiter),
         UsernamePasswordAuthenticationFilter.class);
+
+    http.addFilterBefore(
+        new com.trevo4folhas.admin.OperatorSessionFilter(adminRepository),
+        org.springframework.security.web.access.intercept.AuthorizationFilter.class);
 
     http.headers(
         headers ->

@@ -22,3 +22,8 @@ dumps/
 *.iml
 .DS_Store
 *.log
+
+# Local agent/cloud environments do not belong to the application or build context.
+.agents/
+.codex/
+.aws/

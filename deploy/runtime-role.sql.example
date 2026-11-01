@@ -1,0 +1,14 @@
+-- Review names and provision credentials externally before use. No default password.
+-- Apply migrations with a separate owner; bootstrap and maintenance use controlled owner access.
+CREATE ROLE trevo_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
+GRANT CONNECT ON DATABASE YOUR_DATABASE TO trevo_runtime;
+GRANT USAGE ON SCHEMA public TO trevo_runtime;
+GRANT SELECT ON public.admins TO trevo_runtime;
+-- PostgreSQL row-share locks require UPDATE privilege on at least one column.
+-- Restrict it to the DB-managed audit field, never password/active/identity columns.
+GRANT UPDATE(updated_at) ON public.admins TO trevo_runtime;
+GRANT SELECT, INSERT, UPDATE ON public.matches,public.markets,public.market_selections,public.tickets TO trevo_runtime;
+GRANT SELECT, INSERT ON public.ticket_items TO trevo_runtime;
+-- Runtime: spring.flyway.enabled=false after owner migration; ddl-auto remains validate.
+-- Backup role requires SELECT on domain tables and technical Flyway history, with schema USAGE.
+-- Assign a SCRAM secret via the approved secret mechanism; never include it in this file.

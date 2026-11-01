@@ -30,6 +30,11 @@ public class AdminHomeController {
     return "admin/tickets";
   }
 
+  @GetMapping("/admin/metrics")
+  public String metrics() {
+    return "admin/metrics";
+  }
+
   @GetMapping("/admin")
   public String home(@AuthenticationPrincipal AdminUserDetails principal, Model model) {
     model.addAttribute("displayName", principal == null ? "" : principal.getDisplayName());

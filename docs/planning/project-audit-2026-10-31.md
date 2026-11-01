@@ -69,3 +69,8 @@ A implementação da Sprint 3 foi concluída localmente após esta auditoria ini
 ## Incremento posterior — Sprint 4
 
 A fila administrativa, confirmação manual com Pix declarado, cancelamento e expiração foram entregues localmente na branch `feat/sprint-4-ticket-operations`, baseada na main `7c03ce8`. Consulte [contrato](sprint-4-contract.md) e [validação](sprint-4-validation.md): 201 testes Java, quatro do cupom, Chrome 360/1440 e recuperação de vencidos após reinício real do app, todos aprovados. As contagens e pendências anteriores deste documento são históricas. S0.01, S1.06 e Sprint 5 permanecem abertas; não há liberação de produção/piloto nesta entrega.
+
+
+## Incremento posterior — Sprint 5 (01/11/2026)
+
+A Sprint 5 está em andamento na branch `feat/sprint-5-metrics-readiness`, baseada na main `c656cc4`. Foram entregues indicadores, instrumentação, revisão de acesso/sessões e preparação/ensaios locais de recuperação e imagem. [Evidências e gates abertos](sprint-5-validation.md): 209 testes Java aprovados; desempenho p95 acima de 200 ms, validações externas/hospedagem/piloto pendentes. As contagens anteriores são históricas e não atestam liberação operacional atual.

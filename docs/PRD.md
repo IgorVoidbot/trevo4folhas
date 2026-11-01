@@ -1131,3 +1131,10 @@ Não alterar estados de cartões, agentes em execução, configurações globais
 Consultar [SPRINTS.md](SPRINTS.md) para responsáveis, dependências, tarefas e evidência exigida. O plano não substitui o estado real do quadro nem marca entregas como feitas pela presença de arquivos.
 
 Fontes de produto: pedido de Igor nesta conversa, PRD 1.2 anterior e pesquisa local datada. Referências técnicas externas aparecem junto das decisões pertinentes. Preços, limites de planos e condições externas citados como pesquisa de 24/10/2026 são registros históricos e precisam de nova conferência antes de contratação; não são cotação atual garantida.
+
+
+## Incremento técnico da Sprint 5 — 01/11/2026
+
+Indicadores implementados em `/admin/metrics` e `GET /api/admin/metrics`, com `from`/`to` inclusivos no fuso da banca, coorte por emissão e operação por confirmação em grupos distintos. `/actuator/health` é público mínimo; métricas técnicas são privadas. Senhas/operadores revogam sessões antigas e procedimentos de recuperação/retencão foram ensaiados em ambiente descartável. Consulte [contrato](planning/sprint-5-contract.md), [validação](planning/sprint-5-validation.md) e [runbook](planning/operations-runbook.md).
+
+Este incremento não encerra RNF-04/RNF-05, US-12 ou o piloto. O p95 medido excede 200 ms; LCP foi medido somente em cenário experimental, sem homologação de aparelhos reais. Hospedagem, HTTPS/segredos/backup externo e política definitiva continuam dependentes de decisões/execução real. Nenhum requisito ou matriz de mercados foi reduzido para encerrar a sprint.
