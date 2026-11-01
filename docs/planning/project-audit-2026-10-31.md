@@ -64,3 +64,8 @@ O assunto do commit descreve a entrega de catálogo/cupom e a reconciliação da
 ## Incremento posterior — Sprint 3
 
 A implementação da Sprint 3 foi concluída localmente após esta auditoria inicial, na branch `feat/sprint-3-ticket-issuance`. Consulte [contrato](sprint-3-contract.md) e [validação](sprint-3-validation.md) para emissão transacional, idempotência, WhatsApp e evidências atuais (173 testes Java, quatro de cupom e navegador 360/1440). O inventário e as contagens anteriores deste documento permanecem como evidência da auditoria inicial. S0.01, S1.06, S4 e S5 continuam pendentes nos escopos indicados.
+
+
+## Incremento posterior — Sprint 4
+
+A fila administrativa, confirmação manual com Pix declarado, cancelamento e expiração foram entregues localmente na branch `feat/sprint-4-ticket-operations`, baseada na main `7c03ce8`. Consulte [contrato](sprint-4-contract.md) e [validação](sprint-4-validation.md): 201 testes Java, quatro do cupom, Chrome 360/1440 e recuperação de vencidos após reinício real do app, todos aprovados. As contagens e pendências anteriores deste documento são históricas. S0.01, S1.06 e Sprint 5 permanecem abertas; não há liberação de produção/piloto nesta entrega.

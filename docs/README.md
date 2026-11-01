@@ -4,7 +4,7 @@ A implementação continua no repositório Projeto-aposta. O produto é uma plat
 
 ## Documentos de referência
 
-A página `/` exibe o catálogo público, revisão, emissão de pré-bilhetes pendentes e compartilhamento explícito pelo WhatsApp. O login administrativo permanece em `/admin/login`. Comportamento, testes e limites estão nas validações da [Sprint 2](planning/sprint-2-validation.md) e [Sprint 3](planning/sprint-3-validation.md); screenshots locais em `target/verification-sprint3/`. A fila e a confirmação administrativa pertencem à Sprint 4.
+A página `/` exibe o catálogo público, revisão, emissão de pré-bilhetes pendentes e compartilhamento explícito pelo WhatsApp. O login administrativo permanece em `/admin/login`. Comportamento, testes e limites estão nas validações da [Sprint 2](planning/sprint-2-validation.md) e [Sprint 3](planning/sprint-3-validation.md); screenshots locais em `target/verification-sprint3/`. A fila, decisões e expiração da Sprint 4 estão disponíveis em `/admin/tickets`; veja a [validação operacional](planning/sprint-4-validation.md).
 
 - [PRD](PRD.md): produto, arquitetura, UX, dados, requisitos, aceites, métricas e decisões pendentes.
 - [Sprints](SPRINTS.md): backlog preservado, dependências, responsáveis e evidência de conclusão.
@@ -72,3 +72,15 @@ Em falha de conexão, mantenha a aba aberta e use **Tentar novamente**: a mesma 
 Limite local padrão: `TICKET_RATE_LIMIT_MAX_ATTEMPTS=10` por `TICKET_RATE_LIMIT_WINDOW_SECONDS=60`, por endereço remoto e sessão, em memória do processo; configuração experimental de desenvolvimento, sem homologação de capacidade/abuso em produção. A sync esportiva segue desligada e emissão não consulta o fornecedor.
 
 Validação de navegador: após gerar CSS e `./mvnw spotless:check verify`, execute `python3 src/frontend/tests/run-ticket-issuance-browser.py`. Requer Docker, Java 17 em `/usr/lib/jvm/java-17-openjdk-amd64`, Chrome em `/usr/bin/google-chrome` e Playwright importável (ou caminho em `PLAYWRIGHT_MODULE`). O runner cria banco/app temporários, operador e ofertas fictícias, usa contato fictício, bloqueia a navegação externa do WhatsApp e encerra os processos. Não usa as credenciais administrativas locais. Relatórios/screenshots ficam em `target/verification-sprint2/` e `target/verification-sprint3/`, sem versionamento.
+
+### Operação administrativa — Sprint 4
+
+Reinicie a aplicação no IntelliJ com o perfil `local` para carregar as novas rotas e o job. Entre em `/admin/login` e abra **Gerenciar pré-bilhetes** na administração, ou acesse `/admin/tickets`. A fila oferece código exato (normaliza caixa/espaços nas extremidades), situação, período de emissão e paginação. As datas do filtro usam o fuso da banca, inclusive quando o dispositivo está em outro fuso.
+
+Abra **Ver pré-bilhete** para conferir identificação, snapshots e valores. Use **Conferir Pix e confirmar** somente depois de verificar o recebimento integral no banco; marque a declaração e registre a decisão. Cancelamento exige motivo e só se aplica a pendente ainda válido. Ambas as ações permitem observação operacional opcional. Operador e horário vêm do servidor. Mudanças de odds não recalculam o bilhete emitido; ofertas precisam continuar disponíveis, curadas e frescas para confirmar.
+
+Se outro operador decidir primeiro, a tela recebe conflito e estado atual. Em falha de conexão, preserve os campos, feche o diálogo e use **Atualizar detalhe** para consultar o resultado antes de nova decisão. Não há repetição automática. Bilhetes vencidos não podem ser reativados; pagamento após vencimento exige atendimento manual fora do sistema. Partidas canceladas aparecem em alerta e não alteram automaticamente bilhetes já confirmados.
+
+A expiração roda ao iniciar e a cada minuto, em lotes limitados; consultas e comandos já tratam vencidos como expirados antes do job. O controle `trevo.tickets.expiration.enabled=false` é usado somente para isolar os testes Java; o job fica habilitado por padrão na aplicação. Não há migration nova nesta sprint: o schema V1–V9 já possui os campos e índices necessários. Nenhuma operação consulta o fornecedor.
+
+Validação completa de navegador e reinício: depois do build com Java 17, execute `PLAYWRIGHT_MODULE=/caminho/para/playwright/index.mjs python3 src/frontend/tests/run-ticket-operations-browser.py`. Usa Docker/PostgreSQL 16, Chrome e os mesmos requisitos do runner da Sprint 3. O runner cria credenciais e catálogo fictícios, eleva o limite de logins apenas no processo descartável para executar vários cenários, intercepta o WhatsApp e reinicia o app mantendo somente o banco de teste. Artefatos locais: `target/verification-sprint4/`. Não usa o banco ou credenciais administrativas locais.
